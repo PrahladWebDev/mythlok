@@ -164,7 +164,7 @@ exports.updateReadingProgress = async (req, res) => {
 // Story Like Controller
 exports.toggleLikeStory = async (req, res) => {
   try {
-    const { storyId } = req.params;
+    const storyId = req.params.storyId || req.params.id;
     const userId = req.user._id;
     const story = await Story.findById(storyId);
     if (!story) return res.status(404).json({ success: false, message: 'Story not found.' });
