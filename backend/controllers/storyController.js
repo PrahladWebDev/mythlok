@@ -48,7 +48,14 @@ exports.getStories = async (req, res) => {
     if (tag)      query.tags = tag.toLowerCase();
 
     if (search) {
-      query.$text = { $search: search };
+      const regex = new RegExp(search, 'i');
+      query.$or = [
+        { title: regex },
+        { shortDescription: regex },
+        { tags: regex },
+        { alternativeNames: regex },
+        { state: regex },
+      ];
     }
 
     const skip = (Number(page) - 1) * Number(limit);
