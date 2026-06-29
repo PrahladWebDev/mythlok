@@ -44,6 +44,7 @@ const userSchema = new mongoose.Schema({
 
   // Stats
   storiesRead:    { type: Number, default: 0 },
+  likesReceived:  { type: Number, default: 0 },
   storiesWritten: { type: Number, default: 0 },
   totalLikesReceived: { type: Number, default: 0 },
   statesExplored: [{ type: String }],
