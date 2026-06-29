@@ -188,7 +188,7 @@ const Home = () => {
   };
 
   const heroStory = featured[carouselIdx] || featured[0];
-const heroPlaceholder = heroBanner;
+  const heroPlaceholder = heroBanner;
   const heroBg = heroStory?.coverImage?.url || heroPlaceholder;
 
   return (
