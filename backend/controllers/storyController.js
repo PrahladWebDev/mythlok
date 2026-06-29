@@ -109,17 +109,19 @@ exports.getStory = async (req, res) => {
 
     // Track reading history if logged in
     if (req.user) {
-      const historyEntry = await ReadingHistory.findOneAndUpdate(
+      // Atomic upsert — $setOnInsert only runs when a new doc is created
+      const historyResult = await ReadingHistory.collection.updateOne(
         { user: req.user._id, story: story._id },
-        { readAt: new Date(), $inc: { timeSpent: 0 } },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
+        {
+          $set: { readAt: new Date() },
+          $setOnInsert: { timeSpent: 0, completed: false },
+        },
+        { upsert: true }
       );
 
-      // If this is the first time reading (doc was just created via upsert), increment storiesRead
-      const isFirstRead = historyEntry.__v === 0 && !historyEntry.completed;
-      if (isFirstRead) {
+      // upsertedCount === 1 means first-ever read, guaranteed atomic
+      if (historyResult.upsertedCount === 1) {
         await User.findByIdAndUpdate(req.user._id, { $inc: { storiesRead: 1 } });
-        const { checkAndAwardAchievements } = require('../utils/achievements');
         checkAndAwardAchievements(req.user._id).catch(() => {});
       }
 
