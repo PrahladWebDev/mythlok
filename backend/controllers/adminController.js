@@ -1,7 +1,6 @@
 const User = require('../models/User');
 const Story = require('../models/Story');
 const { Notification, Report, Achievement } = require('../models/index');
-const Story = require('../models/Story');
 
 // ─── Admin Analytics ──────────────────────────────────────
 exports.getAnalytics = async (req, res) => {
