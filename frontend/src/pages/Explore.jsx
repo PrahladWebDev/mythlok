@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import StoryCard from '../components/story/StoryCard';
 import api from '../utils/api';
@@ -36,11 +36,27 @@ const Explore = () => {
   const sort     = searchParams.get('sort')      || '-createdAt';
   const page     = Number(searchParams.get('page') || 1);
 
+  // Local search input state — debounced before hitting URL/API
+  const [searchInput, setSearchInput] = useState(search);
+  const debounceRef = useRef(null);
+
+  // Sync local input if URL param changes externally (e.g. clear filters)
+  useEffect(() => { setSearchInput(search); }, [search]);
+
   const updateParam = (key, value) => {
     const next = new URLSearchParams(searchParams);
     if (value) next.set(key, value); else next.delete(key);
     next.delete('page');
     setSearchParams(next);
+  };
+
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    setSearchInput(val);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      updateParam('search', val);
+    }, 500);
   };
 
   const fetchStories = useCallback(async () => {
@@ -112,8 +128,8 @@ const Explore = () => {
                 <input
                   className="form-input"
                   placeholder="Title, creature, place…"
-                  value={search}
-                  onChange={e => updateParam('search', e.target.value)}
+                  value={searchInput}
+                  onChange={handleSearchChange}
                 />
               </div>
 
