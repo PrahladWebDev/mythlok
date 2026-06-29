@@ -207,7 +207,22 @@ const heroPlaceholder = heroBanner;
 
         <div className="container lp-hero__content">
           <div className="lp-hero__inner">
+            <p className="lp-hero__eyebrow">
+              <span className="lp-hero__eyebrow-line" />
+              India's Living Folklore Archive
+              <span className="lp-hero__eyebrow-line" />
+            </p>
 
+            <h1 className="lp-hero__title">
+              Every village<br />
+              holds a ghost.<br />
+              <span className="lp-hero__title-gold">We keep them alive.</span>
+            </h1>
+
+            <p className="lp-hero__subtitle">
+              Discover <Typewriter /> from all 28 Indian states —<br className="lp-hero__br"/>
+              preserved by the communities who lived them.
+            </p>
 
             <form className="lp-hero__search" onSubmit={handleSearch}>
               <span className="lp-hero__search-icon">🔍</span>
