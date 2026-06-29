@@ -284,12 +284,19 @@ const StoryDetail = () => {
     <>
     <div className="story-detail">
       {/* Hero */}
-      <div
-        className="story-detail__hero"
-        style={{ backgroundImage: `url(${story.coverImage?.url || ''})` }}
-      >
-        <div className="story-detail__hero-overlay" />
-        <div className="container story-detail__hero-content">
+      <div className="story-detail__hero">
+        {/* Left — full cover image */}
+        {story.coverImage?.url && (
+          <div className="story-detail__hero-image-wrap">
+            <img
+              src={story.coverImage.url}
+              alt={story.title}
+              className="story-detail__hero-image"
+            />
+          </div>
+        )}
+        {/* Right — text content */}
+        <div className="story-detail__hero-content">
           {/* Breadcrumb */}
           <nav className="story-detail__breadcrumb">
             <Link to="/">Home</Link>
