@@ -182,7 +182,8 @@ exports.createStory = async (req, res) => {
       tags: tags || [],
       references: references || [],
       contributor: req.user._id,
-      status: isDraft ? 'draft' : 'pending',
+      // Admin stories go live immediately, others go to pending review
+      status: isDraft ? 'draft' : req.user.role === 'admin' ? 'approved' : 'pending',
     };
 
     // Only set location when valid coords are provided
@@ -334,7 +335,7 @@ exports.reviewStory = async (req, res) => {
     await Notification.create({
       recipient: story.contributor._id,
       sender: req.user._id,
-      type: `story_${status}`.replace('story_approved', 'story_approved'),
+      type: status === 'changes_requested' ? 'story_changes' : `story_${status}`,
       title: status === 'approved' ? 'Story Approved!' : status === 'rejected' ? 'Story Rejected' : 'Changes Requested',
       message: messages[status],
       link: `/stories/${story.slug}`,
