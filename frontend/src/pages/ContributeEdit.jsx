@@ -111,17 +111,19 @@ const ContributeEdit = () => {
 
   const handleSave = async (status) => {
     setLoading(true);
+    // Admin editing a story publishes directly as approved
+    const resolvedStatus = status === 'pending' && user.role === 'admin' ? 'approved' : status;
     const payload = {
       ...form,
       alternativeNames: form.alternativeNames ? form.alternativeNames.split(',').map(s => s.trim()) : [],
       tags: form.tags ? form.tags.split(',').map(s => s.trim().toLowerCase()) : [],
       references: form.references ? form.references.split('\n').map(s => s.trim()).filter(Boolean) : [],
-      status,
+      status: resolvedStatus,
       ...(form.lat && form.lng ? { lat: parseFloat(form.lat), lng: parseFloat(form.lng) } : {}),
     };
     try {
       await api.put(`/stories/${id}`, payload);
-      toast.success(status === 'draft' ? 'Draft saved!' : '🚀 Story resubmitted for review!');
+      toast.success(status === 'draft' ? 'Draft saved!' : user.role === 'admin' ? '🚀 Story published!' : '🚀 Story resubmitted for review!');
       navigate('/profile');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Save failed.');
@@ -341,7 +343,7 @@ const ContributeEdit = () => {
           {/* Step 3: Review */}
           {step === 3 && (
             <div className="contribute__step-content">
-              <h2 className="contribute__step-title">Review & Resubmit</h2>
+              <h2 className="contribute__step-title">{user.role === 'admin' ? 'Review & Publish' : 'Review & Resubmit'}</h2>
               <div className="contribute__review">
                 <div className="contribute__review-item">
                   <span className="contribute__review-label">Title</span>
@@ -382,7 +384,7 @@ const ContributeEdit = () => {
                   onClick={() => handleSave('pending')}
                   disabled={loading || !form.title || !form.state || !form.category || !form.fullStory}
                 >
-                  {loading ? 'Saving…' : '🚀 Resubmit for Review'}
+                  {loading ? 'Saving…' : user.role === 'admin' ? '🚀 Publish' : '🚀 Resubmit for Review'}
                 </button>
               </div>
             </div>
