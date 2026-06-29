@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Story = require('../models/Story');
 const { Notification, Report, Achievement } = require('../models/index');
+const Story = require('../models/Story');
 
 // ─── Admin Analytics ──────────────────────────────────────
 exports.getAnalytics = async (req, res) => {
@@ -148,6 +149,7 @@ exports.getReports = async (req, res) => {
   try {
     const reports = await Report.find({ status: 'pending' })
       .populate('reporter', 'name username')
+      .populate({ path: 'targetId', select: 'slug title', model: Story })
       .sort('-createdAt')
       .limit(50);
     res.json({ success: true, data: reports });
