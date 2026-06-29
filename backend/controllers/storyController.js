@@ -272,23 +272,51 @@ exports.updateStory = async (req, res) => {
       }
     }
 
-    const updates = { ...req.body };
+    // Whitelist only editable fields — never allow slug, _id, stats, or timestamps through
+    const {
+      title, alternativeNames, state, district,
+      category, shortDescription, fullStory,
+      origin, significance, tags, coverImage, status,
+      lat, lng,
+    } = req.body;
 
-    // Coerce lat/lng → GeoJSON location
-    if (req.body.lat !== undefined || req.body.lng !== undefined) {
-      const parsedLat = parseFloat(req.body.lat);
-      const parsedLng = parseFloat(req.body.lng);
-      if (!isNaN(parsedLat) && !isNaN(parsedLng)
-          && parsedLat >= -90 && parsedLat <= 90
-          && parsedLng >= -180 && parsedLng <= 180) {
-        updates.location = { type: 'Point', coordinates: [parsedLng, parsedLat] };
+    const updates = {};
+    if (title !== undefined)            updates.title            = title;
+    if (alternativeNames !== undefined) updates.alternativeNames = alternativeNames;
+    if (state !== undefined)            updates.state            = state;
+    if (district !== undefined)         updates.district         = district;
+    if (category !== undefined)         updates.category         = category;
+    if (shortDescription !== undefined) updates.shortDescription = shortDescription;
+    if (fullStory !== undefined)        updates.fullStory        = fullStory;
+    if (origin !== undefined)           updates.origin           = origin;
+    if (significance !== undefined)     updates.significance     = significance;
+    if (tags !== undefined)             updates.tags             = tags;
+    if (coverImage !== undefined)       updates.coverImage       = coverImage;
+
+    // references comes as string[] from frontend — coerce to [{title, url}] the model expects
+    if (req.body.references !== undefined) {
+      const refs = req.body.references;
+      if (Array.isArray(refs)) {
+        updates.references = refs
+          .map(r => typeof r === 'string' ? { title: r, url: '' } : r)
+          .filter(r => r.title || r.url);
+      } else {
+        updates.references = [];
       }
-      delete updates.lat;
-      delete updates.lng;
     }
 
-    if (updates.status === 'pending' && !isAdmin) {
-      updates.status = 'pending'; // allow re-submit
+    // Coerce lat/lng → GeoJSON location
+    const parsedLat = parseFloat(lat);
+    const parsedLng = parseFloat(lng);
+    if (!isNaN(parsedLat) && !isNaN(parsedLng)
+        && parsedLat >= -90 && parsedLat <= 90
+        && parsedLng >= -180 && parsedLng <= 180) {
+      updates.location = { type: 'Point', coordinates: [parsedLng, parsedLat] };
+    }
+
+    // Allow contributor to re-submit (pending) or save draft
+    if (status === 'pending' || status === 'draft') {
+      updates.status = status;
     }
 
     story = await Story.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true })
