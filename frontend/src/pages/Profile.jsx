@@ -176,7 +176,7 @@ const Profile = ({ initialTab = 'overview' }) => {
                 <div className="profile__overview-stats">
                   <div><strong>{user.storiesRead}</strong><span>Stories read</span></div>
                   <div><strong>{user.statesExplored?.length || 0}</strong><span>States explored</span></div>
-                  <div><strong>{user.totalLikesReceived || 0}</strong><span>Likes received</span></div>
+                  <div><strong>{user.likesReceived || 0}</strong><span>Likes received</span></div>
                 </div>
               </div>
               <div className="profile__overview-card">
