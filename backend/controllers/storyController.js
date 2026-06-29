@@ -323,6 +323,22 @@ exports.updateStory = async (req, res) => {
       .populate('category', 'name slug icon color')
       .populate('contributor', 'name username avatar');
 
+    // Notify all admins when contributor resubmits for review
+    if (updates.status === 'pending') {
+      const admins = await User.find({ role: 'admin' }, '_id');
+      const notifications = admins.map(admin => ({
+        recipient: admin._id,
+        sender: req.user._id,
+        type: 'story_resubmitted',
+        title: 'Story Resubmitted for Review',
+        message: `${req.user.name} resubmitted "${story.title}" for review.`,
+        link: `/admin?tab=pending`,
+      }));
+      if (notifications.length) {
+        await Notification.insertMany(notifications);
+      }
+    }
+
     res.json({ success: true, message: 'Story updated.', data: story });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to update story.' });
