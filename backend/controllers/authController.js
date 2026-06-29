@@ -80,15 +80,22 @@ exports.getMe = async (req, res) => {
 // ─── Update Profile ───────────────────────────────────────
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, bio, state } = req.body;
+    const { name, username, bio, state, avatar } = req.body;
     const updates = {};
-    if (name)  updates.name  = name;
-    if (bio !== undefined)   updates.bio  = bio;
-    if (state !== undefined) updates.state = state;
+    if (name)                updates.name     = name;
+    if (username)            updates.username = username;
+    if (bio !== undefined)   updates.bio      = bio;
+    if (state !== undefined) updates.state    = state;
+    // avatar comes as { url, publicId } from the Cloudinary upload step
+    if (avatar && avatar.url) updates.avatar  = avatar;
 
-    const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true, runValidators: true });
+    const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true, runValidators: true })
+      .populate('achievements.achievementId');
     res.json({ success: true, message: 'Profile updated.', user });
   } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ success: false, message: 'Username already taken.' });
+    }
     res.status(500).json({ success: false, message: 'Profile update failed.' });
   }
 };
