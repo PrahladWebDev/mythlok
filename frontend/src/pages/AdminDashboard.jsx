@@ -345,7 +345,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className="admin__report-actions">
                       {r.targetType === 'story' && (
-                        <Link to={`/story/${r.targetId}`} className="btn btn-ghost btn-sm" target="_blank">
+                        <Link to={`/stories/${r.targetId?.slug || r.targetId}`} className="btn btn-ghost btn-sm" target="_blank">
                           View Content ↗
                         </Link>
                       )}
