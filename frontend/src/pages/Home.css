@@ -788,12 +788,12 @@
 
 @media (max-width: 768px) {
   .lp-hero {
-    align-items: flex-start;
-    min-height: auto;
+    align-items: center;
+    min-height: 100vw;
   }
   .lp-hero__bg {
-    background-size: contain;
-    background-position: center top;
+    background-size: cover;
+    background-position: center center;
     background-repeat: no-repeat;
     background-color: #0d0a1a;
     animation: none;
@@ -801,15 +801,15 @@
   }
   .lp-hero__vignette {
     background:
-      linear-gradient(to bottom, transparent 0%, transparent 50%, rgba(13,10,26,0.6) 70%, rgba(13,10,26,0.98) 85%, rgba(13,10,26,1) 100%);
+      linear-gradient(to bottom, rgba(13,10,26,0.3) 0%, transparent 40%, rgba(13,10,26,0.85) 100%);
   }
   .lp-hero__content {
     flex-direction: column;
     gap: 2rem;
-    /* push content below the banner image — image ratio ~56.8% of width */
-    padding-top: calc(56.8vw + 1rem);
+    padding-top: 4rem;
     padding-bottom: 3rem;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: flex-end;
   }
   .lp-hero__inner { max-width: 100%; }
   .lp-hero__featured-card { width: 100%; max-width: 360px; animation: none; }
