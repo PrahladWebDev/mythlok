@@ -179,21 +179,22 @@ exports.toggleLikeStory = async (req, res) => {
     story.likesCount = story.likes.length;
     await story.save();
 
-    // Notify story contributor when liked (not self-like)
-    if (liked && story.contributor.toString() !== userId.toString()) {
-      await Notification.create({
-        recipient: story.contributor,
-        sender: userId,
-        type: 'like',
-        title: 'Someone liked your story',
-        message: `${req.user.name} liked your story "${story.title}".`,
-        link: `/stories/${story.slug}`,
-      });
+    // Only update likesReceived + notify for OTHER users liking your story
+    const isSelfLike = story.contributor.toString() === userId.toString();
+    if (!isSelfLike) {
+      const delta = liked ? 1 : -1;
+      await User.findByIdAndUpdate(story.contributor, { $inc: { likesReceived: delta } });
+      if (liked) {
+        await Notification.create({
+          recipient: story.contributor,
+          sender: userId,
+          type: 'like',
+          title: 'Someone liked your story',
+          message: `${req.user.name} liked your story "${story.title}".`,
+          link: `/stories/${story.slug}`,
+        });
+      }
     }
-
-    // Update contributor's likesReceived count
-    const delta = liked ? 1 : -1;
-    await User.findByIdAndUpdate(story.contributor, { $inc: { likesReceived: delta } });
 
     res.json({ success: true, liked, likesCount: story.likesCount });
   } catch (err) {
