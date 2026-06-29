@@ -1,25 +1,29 @@
 .story-detail { padding-top: 80px; }
 .story-detail--loading { min-height: 100vh; }
 
-/* Hero — split layout: image left, text right */
+/* Hero — split layout: image left (full, no crop), text right */
 .story-detail__hero {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  min-height: 520px;
+  align-items: stretch;
   background: var(--ink);
 }
 
-/* Left: image fills its half completely */
+/* Left: image shows fully — no fixed height, no overflow hidden */
 .story-detail__hero-image-wrap {
-  position: relative;
-  overflow: hidden;
+  background: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
 }
 .story-detail__hero-image {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
+  height: auto;
+  max-width: 100%;
   display: block;
+  object-fit: contain;
+  border-radius: var(--radius-md);
 }
 
 /* Right: text panel */
@@ -32,14 +36,19 @@
   border-left: 1px solid var(--border);
 }
 
-/* Tablet: stack image on top, text below */
+/* Tablet & Mobile: stack — image on top full width, text below */
 @media (max-width: 1024px) {
   .story-detail__hero {
     grid-template-columns: 1fr;
-    min-height: unset;
   }
   .story-detail__hero-image-wrap {
-    height: 320px;
+    padding: 1.5rem;
+  }
+  .story-detail__hero-image {
+    max-height: 420px;
+    width: auto;
+    max-width: 100%;
+    margin: 0 auto;
   }
   .story-detail__hero-content {
     padding: 2rem 1.5rem;
@@ -48,10 +57,12 @@
   }
 }
 
-/* Mobile */
 @media (max-width: 768px) {
   .story-detail__hero-image-wrap {
-    height: 240px;
+    padding: 1rem;
+  }
+  .story-detail__hero-image {
+    max-height: 300px;
   }
   .story-detail__hero-content {
     padding: 1.5rem 1rem;
