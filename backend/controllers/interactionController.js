@@ -160,3 +160,43 @@ exports.updateReadingProgress = async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to update progress.' });
   }
 };
+
+// Story Like Controller
+exports.toggleLikeStory = async (req, res) => {
+  try {
+    const { storyId } = req.params;
+    const userId = req.user._id;
+    const story = await Story.findById(storyId);
+    if (!story) return res.status(404).json({ success: false, message: 'Story not found.' });
+
+    const idx = story.likes.findIndex(id => id.toString() === userId.toString());
+    const liked = idx === -1;
+    if (liked) {
+      story.likes.push(userId);
+    } else {
+      story.likes.splice(idx, 1);
+    }
+    story.likesCount = story.likes.length;
+    await story.save();
+
+    // Notify story contributor when liked (not self-like)
+    if (liked && story.contributor.toString() !== userId.toString()) {
+      await Notification.create({
+        recipient: story.contributor,
+        sender: userId,
+        type: 'like',
+        title: 'Someone liked your story',
+        message: `${req.user.name} liked your story "${story.title}".`,
+        link: `/stories/${story.slug}`,
+      });
+    }
+
+    // Update contributor's likesReceived count
+    const delta = liked ? 1 : -1;
+    await User.findByIdAndUpdate(story.contributor, { $inc: { likesReceived: delta } });
+
+    res.json({ success: true, liked, likesCount: story.likesCount });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to toggle like.' });
+  }
+};
