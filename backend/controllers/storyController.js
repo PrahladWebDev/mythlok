@@ -157,6 +157,31 @@ exports.getStory = async (req, res) => {
   }
 };
 
+// ─── GET /stories/id/:id (for editing by contributors) ───
+exports.getStoryById = async (req, res) => {
+  try {
+    const story = await Story.findById(req.params.id)
+      .populate('category', 'name slug icon color')
+      .populate('contributor', 'name username avatar bio')
+      .populate('reviewedBy', 'name username');
+
+    if (!story) {
+      return res.status(404).json({ success: false, message: 'Story not found.' });
+    }
+
+    // Only owner or admin can fetch by ID (used for edit page)
+    const isAdmin = req.user?.role === 'admin';
+    const isOwner = req.user?._id.toString() === story.contributor._id.toString();
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ success: false, message: 'Not authorized.' });
+    }
+
+    res.json({ success: true, data: story });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch story.' });
+  }
+};
+
 // ─── POST /stories ────────────────────────────────────────
 exports.createStory = async (req, res) => {
   try {
