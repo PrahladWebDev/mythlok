@@ -35,7 +35,7 @@ const notificationSchema = new mongoose.Schema({
   sender:    { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   type: {
     type: String,
-    enum: ['story_approved', 'story_rejected', 'story_changes', 'comment', 'reply', 'like', 'achievement', 'feature', 'announcement'],
+    enum: ['story_approved', 'story_rejected', 'story_changes', 'story_resubmitted', 'comment', 'reply', 'like', 'achievement', 'feature', 'announcement'],
     required: true,
   },
   title:   { type: String, required: true },
