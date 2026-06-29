@@ -45,7 +45,7 @@ const ContributeEdit = () => {
   useEffect(() => {
     const loadStory = async () => {
       try {
-        const res = await api.get(`/stories/${id}`);
+        const res = await api.get(`/stories/id/${id}`);
         const s = res.data.data;
         setOriginalStory(s);
         setForm({
