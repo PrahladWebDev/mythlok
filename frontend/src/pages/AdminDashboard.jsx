@@ -5,6 +5,83 @@ import api from '../utils/api';
 import toast from 'react-hot-toast';
 import './AdminDashboard.css';
 
+// ─── Review Modal ─────────────────────────────────────────
+const ReviewModal = ({ story, type, onConfirm, onClose }) => {
+  const [note, setNote] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const config = {
+    rejected: {
+      title: '❌ Reject Story',
+      label: 'Reason for rejection (optional)',
+      placeholder: 'e.g. Inaccurate information, inappropriate content…',
+      btnLabel: 'Reject Story',
+      btnStyle: { background: 'rgba(139,26,26,0.4)', color: '#e87070', border: '1px solid #e8707040' },
+      requireNote: false,
+    },
+    changes_requested: {
+      title: '✏️ Request Changes',
+      label: 'What changes are needed? (required)',
+      placeholder: 'e.g. Please add more historical context, fix grammatical errors…',
+      btnLabel: 'Send Request',
+      btnStyle: { background: 'rgba(200,120,0,0.3)', color: '#e8c97a', border: '1px solid #e8c97a40' },
+      requireNote: true,
+    },
+  };
+
+  const cfg = config[type];
+
+  const handleConfirm = async () => {
+    if (cfg.requireNote && !note.trim()) {
+      toast.error('Please describe what changes are needed.');
+      return;
+    }
+    setLoading(true);
+    await onConfirm(story._id, type, note.trim());
+    setLoading(false);
+    onClose();
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+        <h3 className="modal-title">{cfg.title}</h3>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '0.25rem', fontSize: '0.9rem' }}>
+          <strong>{story.title}</strong> by {story.contributor?.name}
+        </p>
+        <div style={{ marginTop: '1.25rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            {cfg.label}
+          </label>
+          <textarea
+            className="form-textarea"
+            rows={4}
+            placeholder={cfg.placeholder}
+            value={note}
+            onChange={e => setNote(e.target.value)}
+            autoFocus
+            style={{ width: '100%', resize: 'vertical' }}
+          />
+        </div>
+        <div className="modal-actions" style={{ marginTop: '1.25rem', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+          <button className="btn btn-ghost btn-sm" onClick={onClose} disabled={loading}>
+            Cancel
+          </button>
+          <button
+            className="btn btn-sm"
+            style={cfg.btnStyle}
+            onClick={handleConfirm}
+            disabled={loading || (cfg.requireNote && !note.trim())}
+          >
+            {loading ? 'Submitting…' : cfg.btnLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Component ───────────────────────────────────────
 const AdminDashboard = () => {
   const { user } = useSelector(s => s.auth);
   const [searchParams] = useSearchParams();
@@ -14,6 +91,7 @@ const AdminDashboard = () => {
   const [reports, setReports] = useState([]);
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
   const [loadingAction, setLoadingAction] = useState(null);
+  const [reviewModal, setReviewModal] = useState(null); // { story, type }
 
   useEffect(() => {
     if (user?.role !== 'admin') return;
@@ -37,7 +115,11 @@ const AdminDashboard = () => {
     try {
       await api.patch(`/stories/${id}/review`, { status, adminNote: note });
       setPendingStories(prev => prev.filter(s => s._id !== id));
-      toast.success(`Story ${status}!`);
+      toast.success(
+        status === 'approved' ? 'Story approved!' :
+        status === 'rejected' ? 'Story rejected.' :
+        'Changes requested — contributor notified.'
+      );
     } catch { toast.error('Action failed.'); }
     setLoadingAction(null);
   };
@@ -161,20 +243,14 @@ const AdminDashboard = () => {
                     <button
                       className="btn btn-sm"
                       style={{ background: 'rgba(139,26,26,0.3)', color: '#e87070' }}
-                      onClick={() => {
-                        const note = prompt('Reason for rejection (optional):') || '';
-                        reviewStory(story._id, 'rejected', note);
-                      }}
+                      onClick={() => setReviewModal({ story, type: 'rejected' })}
                       disabled={loadingAction === story._id}
                     >
                       ❌ Reject
                     </button>
                     <button
                       className="btn btn-ghost btn-sm"
-                      onClick={() => {
-                        const note = prompt('What changes are needed?');
-                        if (note) reviewStory(story._id, 'changes_requested', note);
-                      }}
+                      onClick={() => setReviewModal({ story, type: 'changes_requested' })}
                       disabled={loadingAction === story._id}
                     >
                       ✏️ Request Changes
@@ -239,6 +315,8 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
+
+        {/* Reports */}
         {activeTab === 'reports' && (
           <div className="admin__reports">
             <h2 className="admin__section-title">Reported Content</h2>
@@ -296,6 +374,16 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Review Modal — Reject / Request Changes */}
+      {reviewModal && (
+        <ReviewModal
+          story={reviewModal.story}
+          type={reviewModal.type}
+          onConfirm={reviewStory}
+          onClose={() => setReviewModal(null)}
+        />
+      )}
     </div>
   );
 };
