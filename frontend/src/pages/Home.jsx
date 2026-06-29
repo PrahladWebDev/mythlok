@@ -5,6 +5,7 @@ import { fetchFeatured, fetchTrending } from '../store/slices/storySlice';
 import { openAuthModal } from '../store/slices/uiSlice';
 import StoryCard from '../components/story/StoryCard';
 import api from '../utils/api';
+import heroBanner from "../assets/data/homeBanner.png";
 import './Home.css';
 
 /* ─── Static data ─────────────────────────────────────────── */
@@ -187,7 +188,7 @@ const Home = () => {
   };
 
   const heroStory = featured[carouselIdx] || featured[0];
-  const heroPlaceholder = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=80';
+const heroPlaceholder = heroBanner;
   const heroBg = heroStory?.coverImage?.url || heroPlaceholder;
 
   return (
