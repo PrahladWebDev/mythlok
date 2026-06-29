@@ -119,7 +119,7 @@ exports.changePassword = async (req, res) => {
   }
 };
 
-// ─── Become Contributor ───────────────────────────────────
+// ─── Become Contributor ──────────────────────────────────
 exports.becomeContributor = async (req, res) => {
   try {
     if (req.user.role !== 'user') {
