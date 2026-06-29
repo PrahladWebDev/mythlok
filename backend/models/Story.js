@@ -81,6 +81,8 @@ const storySchema = new mongoose.Schema({
   totalRatings:  { type: Number, default: 0 },
   totalComments: { type: Number, default: 0 },
   totalBookmarks: { type: Number, default: 0 },
+  likes:          [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  likesCount:     { type: Number, default: 0 },
 }, { timestamps: true });
 
 // ─── Indexes ─────────────────────────────────────────────
