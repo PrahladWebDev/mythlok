@@ -141,6 +141,8 @@ const StoryDetail = () => {
   const { user } = useSelector(s => s.auth);
 
   const [bookmarked, setBookmarked] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
   const [userRating, setUserRating] = useState(0);
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
@@ -158,6 +160,11 @@ const StoryDetail = () => {
     if (!story?._id) return;
     // Load comments
     api.get(`/comments/${story._id}`).then(r => setComments(r.data.data || [])).catch(() => {});
+    // Init likes from story
+    setLikesCount(story.likesCount || 0);
+    if (user) {
+      setLiked(story.likes?.some(id => id === user._id || id?.toString() === user._id?.toString()) || false);
+    }
     // Load user's rating
     if (user) {
       api.get(`/ratings/${story._id}/me`).then(r => setUserRating(r.data.data?.value || 0)).catch(() => {});
@@ -174,6 +181,16 @@ const StoryDetail = () => {
       setBookmarked(res.data.bookmarked);
       toast.success(res.data.message);
     } catch { toast.error('Failed to bookmark.'); }
+  };
+
+  const handleLikeStory = async () => {
+    if (!user) return dispatch(openAuthModal('login'));
+    try {
+      const res = await api.patch(`/stories/${story._id}/like`);
+      setLiked(res.data.liked);
+      setLikesCount(res.data.likesCount);
+      toast.success(res.data.liked ? '❤️ Liked!' : 'Like removed.');
+    } catch { toast.error('Failed to like.'); }
   };
 
   const handleRate = async (value) => {
@@ -470,6 +487,12 @@ const StoryDetail = () => {
                   ⚑ Report Story
                 </button>
               )}
+              <button
+                className={`story-detail__action-btn ${liked ? 'story-detail__action-btn--active' : ''}`}
+                onClick={handleLikeStory}
+              >
+                {liked ? '❤️' : '🤍'} {likesCount > 0 ? likesCount : ''} {liked ? 'Liked' : 'Like'}
+              </button>
               <button
                 className={`story-detail__action-btn ${bookmarked ? 'story-detail__action-btn--active' : ''}`}
                 onClick={handleBookmark}
