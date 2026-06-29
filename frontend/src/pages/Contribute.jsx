@@ -120,17 +120,18 @@ const Contribute = () => {
   };
 
   const handleSubmit = async (status) => {
+    const resolvedStatus = status === 'pending' && user.role === 'admin' ? 'approved' : status;
     const payload = {
       ...form,
       alternativeNames: form.alternativeNames ? form.alternativeNames.split(',').map(s => s.trim()) : [],
       tags: form.tags ? form.tags.split(',').map(s => s.trim().toLowerCase()) : [],
       references: [],
-      status,
+      status: resolvedStatus,
       ...(form.lat && form.lng ? { lat: parseFloat(form.lat), lng: parseFloat(form.lng) } : {}),
     };
     const res = await dispatch(createStory(payload));
     if (res.meta.requestStatus === 'fulfilled') {
-      toast.success(status === 'draft' ? 'Draft saved!' : '🎉 Story submitted for review!');
+      toast.success(status === 'draft' ? 'Draft saved!' : user.role === 'admin' ? '🚀 Story published!' : '🎉 Story submitted for review!');
       navigate('/profile');
     } else {
       toast.error(res.payload || 'Submission failed.');
@@ -413,7 +414,7 @@ const Contribute = () => {
                   onClick={() => handleSubmit('pending')}
                   disabled={loading || !form.title || !form.state || !form.category || !form.fullStory}
                 >
-                  {loading ? 'Submitting…' : '🚀 Submit for Review'}
+                  {loading ? 'Submitting…' : user.role === 'admin' ? '🚀 Publish' : '🚀 Submit for Review'}
                 </button>
               </div>
             </div>
