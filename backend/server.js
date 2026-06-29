@@ -35,6 +35,7 @@ app.use('/api/stories',       require('./routes/stories'));
 app.use('/api/states',        require('./routes/states'));
 app.use('/api/categories',    require('./routes/categories'));
 app.use('/api/comments/:storyId', require('./routes/comments'));
+app.use('/api/comments',          require('./routes/comments'));
 app.use('/api/bookmarks',     require('./routes/bookmarks'));
 app.use('/api/ratings',       require('./routes/ratings'));
 app.use('/api/notifications', require('./routes/notifications'));
