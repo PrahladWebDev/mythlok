@@ -52,7 +52,7 @@
 .lp-section__link:hover { border-color: var(--gold); color: var(--gold-pale); }
 
 /* ═══════════════════════════════════════════════════════════
-   HERO — Full image, text below
+   HERO — Full image, text below (NO CUTS)
 ═══════════════════════════════════════════════════════════ */
 .lp-hero {
   width: 100%;
@@ -69,9 +69,8 @@
   width: 100%;
   height: auto;
   display: block;
-  object-fit: cover;
-  max-height: 90vh;
-  object-position: center center;
+  object-fit: contain;
+  /* REMOVED: max-height: 90vh; - This was causing the cut */
 }
 
 .lp-hero__content-wrapper {
@@ -664,10 +663,6 @@
 }
 
 @media (max-width: 768px) {
-  .lp-hero__image {
-    max-height: 60vh;
-  }
-  
   .lp-hero__content-wrapper {
     padding: 3rem 0 4rem;
   }
@@ -703,7 +698,6 @@
   .lp-cat-grid { grid-template-columns: 1fr; }
   .lp-stats__item { flex-basis: 100%; }
   .lp-hero__cta-primary, .lp-hero__cta-secondary { width: 100%; justify-content: center; }
-  .lp-hero__image { max-height: 50vh; }
 }
 
 /* Reduced motion */
