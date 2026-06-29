@@ -97,11 +97,9 @@ function Typewriter() {
 function Mandala({ className }) {
   return (
     <svg className={className} viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Outer rings */}
       <circle cx="200" cy="200" r="190" stroke="rgba(183,140,62,0.08)" strokeWidth="1"/>
       <circle cx="200" cy="200" r="170" stroke="rgba(183,140,62,0.06)" strokeWidth="1"/>
       <circle cx="200" cy="200" r="150" stroke="rgba(183,140,62,0.1)" strokeWidth="0.5"/>
-      {/* 16-point star */}
       {Array.from({length: 16}).map((_, i) => {
         const a = (i * 360 / 16) * Math.PI / 180;
         const a2 = ((i + 0.5) * 360 / 16) * Math.PI / 180;
@@ -110,7 +108,6 @@ function Mandala({ className }) {
         const x3 = 200 + 170 * Math.cos(a + Math.PI / 8); const y3 = 200 + 170 * Math.sin(a + Math.PI / 8);
         return <path key={i} d={`M200 200 L${x1} ${y1} L${x2} ${y2} L${x3} ${y3}Z`} fill="rgba(183,140,62,0.04)" stroke="rgba(183,140,62,0.15)" strokeWidth="0.5"/>;
       })}
-      {/* Inner petals */}
       {Array.from({length: 8}).map((_, i) => {
         const a = (i * 45) * Math.PI / 180;
         const x1 = 200 + 100 * Math.cos(a); const y1 = 200 + 100 * Math.sin(a);
@@ -118,13 +115,11 @@ function Mandala({ className }) {
         const cx2 = 200 + 80 * Math.cos(a + 0.3); const cy2 = 200 + 80 * Math.sin(a + 0.3);
         return <path key={i} d={`M200 200 Q${cx1} ${cy1} ${x1} ${y1} Q${cx2} ${cy2} 200 200`} fill="rgba(183,140,62,0.07)" stroke="rgba(183,140,62,0.2)" strokeWidth="0.5"/>;
       })}
-      {/* Dot ring */}
       {Array.from({length: 24}).map((_, i) => {
         const a = (i * 15) * Math.PI / 180;
         const x = 200 + 115 * Math.cos(a); const y = 200 + 115 * Math.sin(a);
         return <circle key={i} cx={x} cy={y} r="1.5" fill="rgba(183,140,62,0.3)"/>;
       })}
-      {/* Centre */}
       <circle cx="200" cy="200" r="24" fill="rgba(183,140,62,0.05)" stroke="rgba(183,140,62,0.3)" strokeWidth="1"/>
       <circle cx="200" cy="200" r="10" fill="rgba(183,140,62,0.15)"/>
       <circle cx="200" cy="200" r="4" fill="rgba(183,140,62,0.6)"/>
@@ -160,7 +155,6 @@ const Home = () => {
     return () => clearTimeout(t);
   }, [dispatch]);
 
-  // Intersection Observer for stats counter
   useEffect(() => {
     const el = statsRef.current;
     if (!el) return;
@@ -169,13 +163,11 @@ const Home = () => {
     return () => obs.disconnect();
   }, []);
 
-  // Auto-rotate voices
   useEffect(() => {
     const t = setInterval(() => setActiveVoice(v => (v + 1) % VOICES.length), 4000);
     return () => clearInterval(t);
   }, []);
 
-  // Auto-rotate featured carousel
   useEffect(() => {
     if (!featured.length) return;
     const t = setInterval(() => setCarouselIdx(i => (i + 1) % Math.min(featured.length, 5)), 5000);
@@ -195,94 +187,53 @@ const Home = () => {
     <div className={`home ${heroLoaded ? 'home--loaded' : ''}`}>
 
       {/* ══════════════════════════════════════════════════════
-          HERO — Full-bleed cinematic
+          HERO — Full image with text below
       ══════════════════════════════════════════════════════ */}
-      <section className="lp-hero" style={{ '--hero-bg': `url(${heroBg})` }}>
-        <div className="lp-hero__bg" />
-        <div className="lp-hero__vignette" />
+      <section className="lp-hero">
+        <div className="lp-hero__image-wrapper">
+          <img src={heroBg} alt="MythLok Hero Banner" className="lp-hero__image" />
+        </div>
+        
+        {/* Text content below the image */}
+        <div className="lp-hero__content-wrapper">
+          <div className="container">
+            <div className="lp-hero__text-content">
+              <p className="lp-hero__eyebrow">
+                <span className="lp-hero__eyebrow-line" />
+                India's Living Folklore Archive
+                <span className="lp-hero__eyebrow-line" />
+              </p>
 
-        {/* Floating Mandala */}
-        <Mandala className="lp-hero__mandala lp-hero__mandala--left" />
-        <Mandala className="lp-hero__mandala lp-hero__mandala--right" />
+              <h1 className="lp-hero__title">
+                Every village holds a ghost.<br />
+                <span className="lp-hero__title-gold">We keep them alive.</span>
+              </h1>
 
-        <div className="container lp-hero__content">
-          <div className="lp-hero__inner">
-            <p className="lp-hero__eyebrow">
-              <span className="lp-hero__eyebrow-line" />
-              India's Living Folklore Archive
-              <span className="lp-hero__eyebrow-line" />
-            </p>
+              <p className="lp-hero__subtitle">
+                Discover <Typewriter /> from all 28 Indian states —<br className="lp-hero__br"/>
+                preserved by the communities who lived them.
+              </p>
 
-            <h1 className="lp-hero__title">
-              Every village<br />
-              holds a ghost.<br />
-              <span className="lp-hero__title-gold">We keep them alive.</span>
-            </h1>
+              <form className="lp-hero__search" onSubmit={handleSearch}>
+                <span className="lp-hero__search-icon">🔍</span>
+                <input
+                  className="lp-hero__search-input"
+                  placeholder="Search: Bhangarh, Vetala, Sundarbans…"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                />
+                <button type="submit" className="btn btn-gold lp-hero__search-btn">Search</button>
+              </form>
 
-            <p className="lp-hero__subtitle">
-              Discover <Typewriter /> from all 28 Indian states —<br className="lp-hero__br"/>
-              preserved by the communities who lived them.
-            </p>
-
-            <form className="lp-hero__search" onSubmit={handleSearch}>
-              <span className="lp-hero__search-icon">🔍</span>
-              <input
-                className="lp-hero__search-input"
-                placeholder="Search: Bhangarh, Vetala, Sundarbans…"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-              />
-              <button type="submit" className="btn btn-gold lp-hero__search-btn">Search</button>
-            </form>
-
-            <div className="lp-hero__actions">
-              <Link to="/explore" className="lp-hero__cta-primary">
-                Explore Archive
-                <span className="lp-hero__cta-arrow">→</span>
-              </Link>
-              <Link to="/map" className="lp-hero__cta-secondary">🗺 India Map</Link>
+              <div className="lp-hero__actions">
+                <Link to="/explore" className="lp-hero__cta-primary">
+                  Explore Archive
+                  <span className="lp-hero__cta-arrow">→</span>
+                </Link>
+                <Link to="/map" className="lp-hero__cta-secondary">🗺 India Map</Link>
+              </div>
             </div>
           </div>
-
-          {/* Featured story card floating right */}
-          {heroStory && (
-            <div className="lp-hero__featured-card">
-              <div className="lp-hero__featured-badge">⭐ Featured Story</div>
-              <Link to={`/stories/${heroStory.slug}`} className="lp-hero__featured-link">
-                {heroStory.coverImage?.url && (
-                  <div className="lp-hero__featured-img-wrap">
-                    <img src={heroStory.coverImage.url} alt={heroStory.title} className="lp-hero__featured-img" />
-                  </div>
-                )}
-                <div className="lp-hero__featured-meta">
-                  <span className="lp-hero__featured-category">{heroStory.category?.icon} {heroStory.category?.name}</span>
-                  <h3 className="lp-hero__featured-title">{heroStory.title}</h3>
-                  <p className="lp-hero__featured-desc">{heroStory.shortDescription?.slice(0, 90)}…</p>
-                  <div className="lp-hero__featured-footer">
-                    <span>📍 {heroStory.state}</span>
-                    <span>👁 {(heroStory.views || 0).toLocaleString()} reads</span>
-                  </div>
-                </div>
-              </Link>
-              {/* Carousel dots */}
-              {featured.length > 1 && (
-                <div className="lp-hero__carousel-dots">
-                  {featured.slice(0, 5).map((_, i) => (
-                    <button
-                      key={i}
-                      className={`lp-hero__dot ${i === carouselIdx ? 'lp-hero__dot--active' : ''}`}
-                      onClick={() => setCarouselIdx(i)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="lp-hero__scroll">
-          <div className="lp-hero__scroll-line" />
-          <span>Scroll</span>
         </div>
       </section>
 
@@ -362,7 +313,6 @@ const Home = () => {
                 <span className="lp-state-card__arrow">→</span>
               </Link>
             ))}
-            {/* Duplicate for seamless scroll illusion on wide screens */}
             {STATES.map(state => (
               <Link
                 key={`${state.name}-2`}
