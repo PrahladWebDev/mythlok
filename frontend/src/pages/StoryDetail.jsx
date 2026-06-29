@@ -147,10 +147,9 @@ const StoryDetail = () => {
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
   const [commentLoading, setCommentLoading] = useState(false);
-  const [reportModal, setReportModal] = useState(null);
+  const [reportModal, setReportModal] = useState(null); // { targetId, targetType }
   const [reportReason, setReportReason] = useState('');
   const [reportLoading, setReportLoading] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     dispatch(fetchStory(slug));
@@ -159,11 +158,14 @@ const StoryDetail = () => {
 
   useEffect(() => {
     if (!story?._id) return;
+    // Load comments
     api.get(`/comments/${story._id}`).then(r => setComments(r.data.data || [])).catch(() => {});
+    // Init likes from story
     setLikesCount(story.likesCount || 0);
     if (user) {
       setLiked(story.likes?.some(id => id === user._id || id?.toString() === user._id?.toString()) || false);
     }
+    // Load user's rating
     if (user) {
       api.get(`/ratings/${story._id}/me`).then(r => setUserRating(r.data.data?.value || 0)).catch(() => {});
       api.get('/bookmarks').then(r => {
@@ -250,6 +252,7 @@ const StoryDetail = () => {
     setReportLoading(false);
   };
 
+
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
     toast.success('Link copied to clipboard!');
@@ -280,18 +283,14 @@ const StoryDetail = () => {
   return (
     <>
     <div className="story-detail">
-      {/* Hero - Fixed: Image shows 100% complete on all devices */}
-      <div className="story-detail__hero">
-        <div className="story-detail__hero-image-wrapper">
-          <img 
-            src={story.coverImage?.url || ''} 
-            alt={story.title} 
-            className="story-detail__hero-image"
-            onLoad={() => setImageLoaded(true)}
-          />
-        </div>
+      {/* Hero */}
+      <div
+        className="story-detail__hero"
+        style={{ backgroundImage: `url(${story.coverImage?.url || ''})` }}
+      >
         <div className="story-detail__hero-overlay" />
         <div className="container story-detail__hero-content">
+          {/* Breadcrumb */}
           <nav className="story-detail__breadcrumb">
             <Link to="/">Home</Link>
             <span>/</span>
@@ -332,6 +331,7 @@ const StoryDetail = () => {
         <div className="story-detail__layout">
           {/* Main Content */}
           <main className="story-detail__main">
+            {/* Contributor */}
             {story.contributor && (
               <div className="story-detail__contributor">
                 <div className="story-detail__contributor-avatar">
@@ -347,10 +347,12 @@ const StoryDetail = () => {
               </div>
             )}
 
+            {/* Short description */}
             <blockquote className="story-detail__blockquote">
               {story.shortDescription}
             </blockquote>
 
+            {/* Full Story */}
             <div className="story-detail__section">
               <h2 className="story-detail__section-title">The Legend</h2>
               <div className="prose">
@@ -360,6 +362,7 @@ const StoryDetail = () => {
               </div>
             </div>
 
+            {/* Origin */}
             {story.origin && (
               <div className="story-detail__section">
                 <h2 className="story-detail__section-title">Historical Origin</h2>
@@ -367,6 +370,7 @@ const StoryDetail = () => {
               </div>
             )}
 
+            {/* Cultural Significance */}
             {story.significance && (
               <div className="story-detail__section">
                 <h2 className="story-detail__section-title">Cultural Significance</h2>
@@ -374,6 +378,7 @@ const StoryDetail = () => {
               </div>
             )}
 
+            {/* Tags */}
             {story.tags?.length > 0 && (
               <div className="story-detail__tags">
                 {story.tags.map(tag => (
@@ -384,6 +389,7 @@ const StoryDetail = () => {
               </div>
             )}
 
+            {/* Image Gallery */}
             {story.images?.length > 0 && (
               <div className="story-detail__section">
                 <h2 className="story-detail__section-title">Gallery</h2>
@@ -398,6 +404,7 @@ const StoryDetail = () => {
               </div>
             )}
 
+            {/* Rating Section */}
             <div className="story-detail__section story-detail__rating-section">
               <h2 className="story-detail__section-title">Rate This Story</h2>
               <div className="story-detail__rating-widget">
@@ -413,11 +420,13 @@ const StoryDetail = () => {
               </div>
             </div>
 
+            {/* Comments */}
             <div className="story-detail__section" id="comments">
               <h2 className="story-detail__section-title">
                 Community Discussion ({story.totalComments || comments.length})
               </h2>
 
+              {/* Comment form */}
               <form className="comment-form" onSubmit={handleComment}>
                 <textarea
                   className="form-textarea"
@@ -445,6 +454,7 @@ const StoryDetail = () => {
                 </div>
               </form>
 
+              {/* Comment list */}
               <div className="comments-list">
                 {comments.length === 0 ? (
                   <p className="comments-empty">Be the first to share your thoughts on this legend.</p>
@@ -467,6 +477,7 @@ const StoryDetail = () => {
 
           {/* Sidebar */}
           <aside className="story-detail__sidebar">
+            {/* Actions */}
             <div className="story-detail__action-card">
               {user && (
                 <button
@@ -499,6 +510,7 @@ const StoryDetail = () => {
               </Link>
             </div>
 
+            {/* Story Info */}
             <div className="story-detail__info-card">
               <h4>Story Details</h4>
               <dl className="story-detail__info-list">
@@ -511,6 +523,7 @@ const StoryDetail = () => {
               </dl>
             </div>
 
+            {/* Related */}
             {story.related?.length > 0 && (
               <div className="story-detail__related">
                 <h4>Related Stories</h4>
