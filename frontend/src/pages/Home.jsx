@@ -179,7 +179,6 @@ const Home = () => {
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.play().catch(() => {
-        // Autoplay was prevented - user will need to interact
         console.log('Video autoplay prevented');
       });
     }
@@ -208,18 +207,17 @@ const Home = () => {
             loop
             muted
             playsInline
-            poster={heroVideo}
+            preload="auto"
           >
             <source src={heroVideo} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-          {/* Dark overlay for text readability */}
           <div className="lp-hero__overlay" />
         </div>
         
         {/* Text content overlay on video */}
         <div className="lp-hero__content">
-          <div className="container">
+          <div className="container lp-hero__container">
             <div className="lp-hero__text-content">
               <p className="lp-hero__eyebrow">
                 <span className="lp-hero__eyebrow-line" />
