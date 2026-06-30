@@ -13,11 +13,11 @@ const Footer = () => (
             <span className="footer__logo-text">MythLok</span>
           </Link>
           <p className="footer__tagline">
-            Preserving India's folklore, myths, and oral traditions for generations to come.
+            Preserving the world's folklore, myths, and oral traditions for generations to come.
             Every story matters.
           </p>
           <div className="footer__badge">
-            <span>🇮🇳 Made with love for Bharat</span>
+            <span>🌍 Made with love for storytellers everywhere</span>
           </div>
         </div>
 
@@ -26,19 +26,19 @@ const Footer = () => (
           <h4 className="footer__col-title">Explore</h4>
           <nav className="footer__links">
             <Link to="/explore">All Stories</Link>
-            <Link to="/map">India Map</Link>
+            <Link to="/map">World Map</Link>
             <Link to="/leaderboard">Leaderboard</Link>
             <Link to="/explore?category=ghost-stories">Ghost Stories</Link>
             <Link to="/explore?category=mythological-creatures">Mythological Creatures</Link>
           </nav>
         </div>
 
-        {/* Popular States */}
+        {/* Popular Countries */}
         <div className="footer__col">
-          <h4 className="footer__col-title">Popular States</h4>
+          <h4 className="footer__col-title">Popular Countries</h4>
           <nav className="footer__links">
-            {['Rajasthan', 'West Bengal', 'Kerala', 'Karnataka', 'Nagaland', 'Assam'].map(s => (
-              <Link key={s} to={`/states/${encodeURIComponent(s)}`}>{s}</Link>
+            {['India', 'Mexico', 'Ireland', 'Japan', 'Egypt', 'Greece'].map(c => (
+              <Link key={c} to={`/countries/${encodeURIComponent(c)}`}>{c}</Link>
             ))}
           </nav>
         </div>
