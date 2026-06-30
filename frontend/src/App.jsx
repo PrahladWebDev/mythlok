@@ -19,7 +19,7 @@ import ContributeEdit from './pages/ContributeEdit';
 import Profile       from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
 import Leaderboard   from './pages/Leaderboard';
-import StatePage     from './pages/StatePage';
+import CountryPage   from './pages/CountryPage';
 import Settings      from './pages/Settings';
 import Notifications from './pages/Notifications';
 
@@ -48,7 +48,7 @@ const AppShell = () => {
           <Route path="/explore"      element={<Explore />} />
           <Route path="/map"          element={<MapPage />} />
           <Route path="/stories/:slug" element={<StoryDetail />} />
-          <Route path="/states/:stateName" element={<StatePage />} />
+          <Route path="/countries/:countryName" element={<CountryPage />} />
           <Route path="/leaderboard"  element={<Leaderboard />} />
 
           <Route path="/profile"      element={<ProtectedRoute><Profile /></ProtectedRoute>} />
