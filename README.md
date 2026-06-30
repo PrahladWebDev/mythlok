@@ -1,15 +1,15 @@
-# ॥ MythLok — Voices of Ancient Bharat
+# ॥ MythLok — Voices of the World
 
-A full-stack community platform for discovering, reading, and contributing Indian folklore — ghost stories, mythological creatures, tribal legends, sacred places, and more from every state of India.
+A full-stack community platform for discovering, reading, and contributing world folklore — ghost stories, mythological creatures, tribal legends, sacred places, and more from every country.
 
 ---
 
 ## ✦ Features
 
 ### For Readers
-- Browse 500+ stories from 28 states
-- Search by name, state, category, creature
-- Interactive India Map (Leaflet) — click any state
+- Browse 500+ stories from 20+ countries
+- Search by name, country, category, creature
+- Interactive World Map — click any country
 - Bookmark stories into custom collections
 - Rate stories (1–5 stars)
 - Comment and discuss with the community
@@ -37,7 +37,7 @@ A full-stack community platform for discovering, reading, and contributing India
 | Layer       | Technology                        |
 |-------------|-----------------------------------|
 | Frontend    | React 18, React Router 6, Redux Toolkit |
-| Map         | React-Leaflet + Leaflet.js        |
+| Map         | Country-tile grid (no geo-coordinates) |
 | Backend     | Node.js, Express.js               |
 | Database    | MongoDB Atlas + Mongoose          |
 | Auth        | JWT (bcryptjs + jsonwebtoken)     |
@@ -79,9 +79,10 @@ npm run seed
 ```
 This creates:
 - 3 users (admin, contributor, regular user)
-- 8 categories
-- 5 richly-written stories
+- 5 richly-written stories from different countries
 - 10 achievements
+
+> Story categories are **hardcoded** in `backend/utils/categories.js` (mirrored in `frontend/src/assets/data/categories.js`) — they are not stored in or seeded into the database.
 
 **Seed credentials:**
 | Role        | Email                  | Password  |
@@ -118,18 +119,20 @@ mythlok/
 │   ├── models/
 │   │   ├── User.js
 │   │   ├── Story.js
-│   │   ├── Category.js
 │   │   ├── Comment.js
 │   │   └── index.js           # Rating, Bookmark, ReadingHistory, Notification, Achievement, Report
 │   ├── routes/                # All Express routers
 │   ├── utils/
-│   │   └── seeder.js          # Database seeder
+│   │   ├── categories.js      # Hardcoded story categories (not DB-seeded)
+│   │   ├── countries.js       # Hardcoded country list
+│   │   └── seeder.js          # Database seeder (users, stories, achievements)
 │   └── server.js              # Entry point
 │
 └── frontend/
     └── src/
         ├── assets/data/
-        │   └── states.js       # 28 Indian states with lat/lng
+        │   ├── countries.js    # Hardcoded country list (no lat/lng)
+        │   └── categories.js   # Hardcoded story categories
         ├── components/
         │   ├── common/
         │   │   └── AuthModal   # Login/Register modal
@@ -139,15 +142,15 @@ mythlok/
         │   └── story/
         │       └── StoryCard   # Reusable story card
         ├── pages/
-        │   ├── Home            # Hero, trending, states, categories
+        │   ├── Home            # Hero, trending, countries, categories
         │   ├── Explore         # Search + filter + pagination
-        │   ├── MapPage         # Interactive Leaflet India map
+        │   ├── MapPage         # Interactive country-tile world map
         │   ├── StoryDetail     # Full story with rating/comments
         │   ├── Contribute      # 4-step submission form
         │   ├── Profile         # Bookmarks, history, achievements
         │   ├── AdminDashboard  # Analytics, review, user mgmt
         │   ├── Leaderboard     # Readers, contributors, stories
-        │   └── StatePage       # Per-state story listing
+        │   └── CountryPage     # Per-country story listing
         ├── store/
         │   ├── index.js
         │   └── slices/
@@ -190,7 +193,7 @@ mythlok/
 ### Stories
 | Method | Path | Description |
 |--------|------|-------------|
-| GET    | /api/stories | List (with filters) |
+| GET    | /api/stories | List (filter by `country`, `category`, `search`, etc.) |
 | GET    | /api/stories/trending | Trending this week |
 | GET    | /api/stories/featured | Featured stories |
 | GET    | /api/stories/:slug | Single story |
@@ -198,6 +201,14 @@ mythlok/
 | PUT    | /api/stories/:id | Update |
 | DELETE | /api/stories/:id | Delete |
 | PATCH  | /api/stories/:id/review | Admin review |
+
+### Countries & Categories
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | /api/countries/stats | Story counts per country |
+| GET | /api/countries/:countryName | Country detail (stories, contributors, featured) |
+| GET | /api/categories | Hardcoded category list |
+| GET | /api/categories/stats | Story counts per category |
 
 ### Community
 | Method | Path | Description |
@@ -212,6 +223,7 @@ mythlok/
 | Method | Path | Description |
 |--------|------|-------------|
 | GET    | /api/admin/analytics | Platform analytics |
+| GET    | /api/admin/country-stats | Story counts/views/ratings per country |
 | GET    | /api/admin/users | User list |
 | PATCH  | /api/admin/users/:id/role | Change role |
 | PATCH  | /api/admin/users/:id/block | Block/unblock |
@@ -222,9 +234,8 @@ mythlok/
 ## 📦 MongoDB Collections
 
 ```
-users             — accounts, roles, stats, achievements
-stories           — content, status, ratings, geo location  
-categories        — 8 folklore types
+users             — accounts, roles, stats, countriesExplored, achievements
+stories           — content, status, ratings, country, category (slug)
 comments          — nested replies, likes
 ratings           — 1–5 star, one per user per story
 bookmarks         — user collections
@@ -233,6 +244,8 @@ notifications     — in-app alerts
 achievements      — unlockable badges
 reports           — content moderation flags
 ```
+
+> Note: there is **no `categories` collection** — categories are a hardcoded list in code (`backend/utils/categories.js`), referenced on stories by slug.
 
 ---
 
@@ -255,8 +268,8 @@ reports           — content moderation flags
 This project demonstrates:
 - **Full-stack architecture** — REST API + React SPA
 - **JWT authentication** with role-based access (4 roles)
-- **MongoDB data modeling** — 10+ collections, aggregations
-- **Interactive SVG/Leaflet map** with real geospatial data
+- **MongoDB data modeling** — multiple collections, aggregations
+- **Country-wise content organization** with an interactive map view
 - **Cloud image storage** (Cloudinary)
 - **Admin CMS** with content moderation workflow
 - **Redux Toolkit** state management
@@ -264,4 +277,4 @@ This project demonstrates:
 
 ---
 
-*"Stories are the threads that weave civilization." — Ancient Indian Proverb*
+*"Stories are the threads that weave humanity together."*
