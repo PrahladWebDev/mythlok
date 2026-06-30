@@ -53,7 +53,7 @@ const achievementSchema = new mongoose.Schema({
   icon:        { type: String, default: '🏆' },
   xpValue:     { type: Number, default: 10 },
   condition: {
-    type:      { type: String, enum: ['stories_read', 'stories_written', 'states_explored', 'likes_received'] },
+    type:      { type: String, enum: ['stories_read', 'stories_written', 'countries_explored', 'likes_received'] },
     threshold: { type: Number },
   },
 }, { timestamps: true });
