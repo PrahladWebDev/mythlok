@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { getCategory } from '../../assets/data/categories';
 import './StoryCard.css';
 
 const Stars = ({ rating }) => {
@@ -16,6 +17,7 @@ const StoryCard = ({ story, size = 'normal' }) => {
   if (!story) return null;
 
   const placeholderImg = `https://ui-avatars.com/api/?name=${encodeURIComponent(story.title)}&size=400&background=1E1736&color=B78C3E&bold=true&length=2`;
+  const category = getCategory(story.category);
 
   return (
     <Link to={`/stories/${story.slug}`} className={`story-card story-card--${size}`}>
@@ -28,19 +30,19 @@ const StoryCard = ({ story, size = 'normal' }) => {
         />
         <div className="story-card__image-overlay" />
         {story.isFeatured && <span className="story-card__featured-badge">⭐ Featured</span>}
-        {story.category && (
+        {category && (
           <span
             className="story-card__cat-badge"
-            style={{ '--cat-color': story.category.color || 'var(--gold)' }}
+            style={{ '--cat-color': category.color || 'var(--gold)' }}
           >
-            {story.category.icon} {story.category.name}
+            {category.icon} {category.name}
           </span>
         )}
       </div>
 
       <div className="story-card__body">
         <div className="story-card__meta">
-          <span className="story-card__state">📍 {story.state}</span>
+          <span className="story-card__state">📍 {story.country}</span>
           <span className="story-card__views">👁 {story.views?.toLocaleString() || 0}</span>
         </div>
 
