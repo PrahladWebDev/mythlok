@@ -3,7 +3,8 @@ import { useNavigate, useParams, Link, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
-import { INDIAN_STATES } from '../assets/data/states';
+import { COUNTRIES } from '../assets/data/countries';
+import { CATEGORIES } from '../assets/data/categories';
 import './Contribute.css';
 
 const STEPS = ['Basic Info', 'The Story', 'Media & Tags', 'Review'];
@@ -14,20 +15,15 @@ const ContributeEdit = () => {
   const { user } = useSelector(s => s.auth);
 
   const [step, setStep] = useState(0);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [locating, setLocating] = useState(false);
   const [originalStory, setOriginalStory] = useState(null);
 
   const [form, setForm] = useState({
     title: '',
     alternativeNames: '',
-    state: '',
-    district: '',
-    lat: '',
-    lng: '',
+    country: '',
     category: '',
     shortDescription: '',
     fullStory: '',
@@ -39,10 +35,6 @@ const ContributeEdit = () => {
   });
 
   useEffect(() => {
-    api.get('/categories').then(r => setCategories(r.data.data)).catch(() => {});
-  }, []);
-
-  useEffect(() => {
     const loadStory = async () => {
       try {
         const res = await api.get(`/stories/id/${id}`);
@@ -51,11 +43,8 @@ const ContributeEdit = () => {
         setForm({
           title: s.title || '',
           alternativeNames: (s.alternativeNames || []).join(', '),
-          state: s.state || '',
-          district: s.district || '',
-          lat: s.location?.coordinates?.[1] ? String(s.location.coordinates[1]) : '',
-          lng: s.location?.coordinates?.[0] ? String(s.location.coordinates[0]) : '',
-          category: s.category?._id || s.category || '',
+          country: s.country || '',
+          category: s.category || '',
           shortDescription: s.shortDescription || '',
           fullStory: s.fullStory || '',
           origin: s.origin || '',
@@ -76,22 +65,6 @@ const ContributeEdit = () => {
   if (!user) return <Navigate to="/" />;
 
   const handle = (e) => setForm(p => ({ ...p, [e.target.name]: e.target.value }));
-
-  const handleGeolocate = () => {
-    if (!navigator.geolocation) return toast.error('Geolocation not supported.');
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        setForm(p => ({
-          ...p,
-          lat: coords.latitude.toFixed(6),
-          lng: coords.longitude.toFixed(6),
-        }));
-        setLocating(false);
-      },
-      () => { toast.error('Could not get location.'); setLocating(false); }
-    );
-  };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -119,7 +92,6 @@ const ContributeEdit = () => {
       tags: form.tags ? form.tags.split(',').map(s => s.trim().toLowerCase()) : [],
       references: form.references ? form.references.split('\n').map(s => s.trim()).filter(Boolean) : [],
       status: resolvedStatus,
-      ...(form.lat && form.lng ? { lat: parseFloat(form.lat), lng: parseFloat(form.lng) } : {}),
     };
     try {
       await api.put(`/stories/${id}`, payload);
@@ -132,7 +104,7 @@ const ContributeEdit = () => {
   };
 
   const canProceed = () => {
-    if (step === 0) return form.title && form.state && form.category;
+    if (step === 0) return form.title && form.country && form.category;
     if (step === 1) return form.shortDescription && form.fullStory?.length >= 100;
     return true;
   };
@@ -205,68 +177,22 @@ const ContributeEdit = () => {
                 <input className="form-input" name="alternativeNames" value={form.alternativeNames} onChange={handle}
                   placeholder="Comma-separated" />
               </div>
-              <div className="contribute__row">
-                <div className="form-group">
-                  <label className="form-label">State *</label>
-                  <select className="form-select" name="state" value={form.state} onChange={handle} required>
-                    <option value="">Select State</option>
-                    {INDIAN_STATES.map(s => <option key={s.code} value={s.name}>{s.name}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">District</label>
-                  <input className="form-input" name="district" value={form.district} onChange={handle}
-                    placeholder="e.g. Alwar" />
-                </div>
-              </div>
               <div className="form-group">
-                <label className="form-label">Precise Location <span className="form-hint">(optional — enables pin on map)</span></label>
-                <div className="contribute__location-picker">
-                  <div className="contribute__location-picker-header">
-                    <span className="contribute__location-picker-label">Latitude &amp; Longitude</span>
-                    {form.lat && form.lng && (
-                      <span className="contribute__location-picker-badge">📍 Set</span>
-                    )}
-                  </div>
-                  <div className="contribute__latlng-row">
-                    <div className="form-group">
-                      <label className="form-label" style={{ fontSize: '0.78rem' }}>Latitude</label>
-                      <input className="form-input" name="lat" value={form.lat} onChange={handle}
-                        placeholder="e.g. 27.4638" type="number" step="any" />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label" style={{ fontSize: '0.78rem' }}>Longitude</label>
-                      <input className="form-input" name="lng" value={form.lng} onChange={handle}
-                        placeholder="e.g. 76.5791" type="number" step="any" />
-                    </div>
-                    <button type="button" className="contribute__locate-btn"
-                      onClick={handleGeolocate} disabled={locating} title="Use my current location">
-                      {locating ? '…' : '🎯'} {locating ? 'Locating…' : 'Use GPS'}
-                    </button>
-                  </div>
-                  {form.lat && form.lng && (
-                    <p className="contribute__location-preview">
-                      Pin at <span>{parseFloat(form.lat).toFixed(4)}°N</span>,{' '}
-                      <span>{parseFloat(form.lng).toFixed(4)}°E</span>
-                      {' '}·{' '}
-                      <button type="button"
-                        style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '0.75rem', textDecoration: 'underline' }}
-                        onClick={() => setForm(p => ({ ...p, lat: '', lng: '' }))}>
-                        Clear
-                      </button>
-                    </p>
-                  )}
-                </div>
+                <label className="form-label">Country *</label>
+                <select className="form-select" name="country" value={form.country} onChange={handle} required>
+                  <option value="">Select Country</option>
+                  {COUNTRIES.map(c => <option key={c.code} value={c.name}>{c.emoji} {c.name}</option>)}
+                </select>
               </div>
               <div className="form-group">
                 <label className="form-label">Category *</label>
                 <div className="contribute__cat-grid">
-                  {categories.map(cat => (
+                  {CATEGORIES.map(cat => (
                     <button
-                      key={cat._id}
+                      key={cat.slug}
                       type="button"
-                      className={`contribute__cat-option ${form.category === cat._id ? 'contribute__cat-option--selected' : ''}`}
-                      onClick={() => setForm(p => ({ ...p, category: cat._id }))}
+                      className={`contribute__cat-option ${form.category === cat.slug ? 'contribute__cat-option--selected' : ''}`}
+                      onClick={() => setForm(p => ({ ...p, category: cat.slug }))}
                     >
                       <span>{cat.icon}</span>
                       <span>{cat.name}</span>
@@ -350,16 +276,8 @@ const ContributeEdit = () => {
                   <span className="contribute__review-value">{form.title || <em>Not set</em>}</span>
                 </div>
                 <div className="contribute__review-item">
-                  <span className="contribute__review-label">Location</span>
-                  <span className="contribute__review-value">{[form.state, form.district].filter(Boolean).join(', ') || <em>Not set</em>}</span>
-                </div>
-                <div className="contribute__review-item">
-                  <span className="contribute__review-label">Map Pin</span>
-                  <span className="contribute__review-value">
-                    {form.lat && form.lng
-                      ? `📍 ${parseFloat(form.lat).toFixed(4)}°, ${parseFloat(form.lng).toFixed(4)}°`
-                      : <em>No pin (state-level only)</em>}
-                  </span>
+                  <span className="contribute__review-label">Country</span>
+                  <span className="contribute__review-value">{form.country || <em>Not set</em>}</span>
                 </div>
                 <div className="contribute__review-item">
                   <span className="contribute__review-label">Story Length</span>
@@ -382,7 +300,7 @@ const ContributeEdit = () => {
                   type="button"
                   className="btn btn-gold btn-lg"
                   onClick={() => handleSave('pending')}
-                  disabled={loading || !form.title || !form.state || !form.category || !form.fullStory}
+                  disabled={loading || !form.title || !form.country || !form.category || !form.fullStory}
                 >
                   {loading ? 'Saving…' : user.role === 'admin' ? '🚀 Publish' : '🚀 Resubmit for Review'}
                 </button>
