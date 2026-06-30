@@ -18,7 +18,7 @@ const updateStoryRating = async (storyId) => {
 exports.getStories = async (req, res) => {
   try {
     const {
-      page = 1, limit = 12, state, category, status = 'approved',
+      page = 1, limit = 12, country, category, status = 'approved',
       search, sort = '-createdAt', featured, tag,
     } = req.query;
 
@@ -42,7 +42,7 @@ exports.getStories = async (req, res) => {
       query.status = status;
     }
 
-    if (state)    query.state = state;
+    if (country)  query.country = country;
     if (category) query.category = category;
     if (featured) query.isFeatured = true;
     if (tag)      query.tags = tag.toLowerCase();
@@ -54,7 +54,7 @@ exports.getStories = async (req, res) => {
         { shortDescription: regex },
         { tags: regex },
         { alternativeNames: regex },
-        { state: regex },
+        { country: regex },
       ];
     }
 
@@ -65,7 +65,6 @@ exports.getStories = async (req, res) => {
 
     const [stories, total] = await Promise.all([
       Story.find(query)
-        .populate('category', 'name slug icon color')
         .populate('contributor', 'name username avatar')
         .sort(sortObj)
         .skip(skip)
@@ -94,7 +93,6 @@ exports.getStory = async (req, res) => {
   try {
     const { slug } = req.params;
     const story = await Story.findOne({ slug })
-      .populate('category', 'name slug icon color')
       .populate('contributor', 'name username avatar bio')
       .populate('reviewedBy', 'name username');
 
@@ -132,10 +130,10 @@ exports.getStory = async (req, res) => {
         checkAndAwardAchievements(req.user._id).catch(() => {});
       }
 
-      // Track state exploration
-      if (!req.user.statesExplored.includes(story.state)) {
+      // Track country exploration
+      if (!req.user.countriesExplored.includes(story.country)) {
         await User.findByIdAndUpdate(req.user._id, {
-          $addToSet: { statesExplored: story.state },
+          $addToSet: { countriesExplored: story.country },
         });
       }
     }
@@ -144,10 +142,9 @@ exports.getStory = async (req, res) => {
     const related = await Story.find({
       status: 'approved',
       _id: { $ne: story._id },
-      $or: [{ state: story.state }, { category: story.category }],
+      $or: [{ country: story.country }, { category: story.category }],
     })
-      .populate('category', 'name slug icon')
-      .select('title slug coverImage state averageRating views')
+      .select('title slug coverImage country category averageRating views')
       .limit(4)
       .lean();
 
@@ -161,7 +158,6 @@ exports.getStory = async (req, res) => {
 exports.getStoryById = async (req, res) => {
   try {
     const story = await Story.findById(req.params.id)
-      .populate('category', 'name slug icon color')
       .populate('contributor', 'name username avatar bio')
       .populate('reviewedBy', 'name username');
 
@@ -186,9 +182,9 @@ exports.getStoryById = async (req, res) => {
 exports.createStory = async (req, res) => {
   try {
     const {
-      title, alternativeNames, state, district, category,
+      title, alternativeNames, country, category,
       shortDescription, fullStory, origin, significance,
-      tags, references, coverImage, status, lat, lng,
+      tags, references, coverImage, status,
     } = req.body;
 
     const isDraft = status === 'draft';
@@ -196,8 +192,7 @@ exports.createStory = async (req, res) => {
     const storyData = {
       title,
       alternativeNames: alternativeNames || [],
-      state,
-      district,
+      country,
       category,
       shortDescription,
       fullStory,
@@ -211,18 +206,7 @@ exports.createStory = async (req, res) => {
       status: isDraft ? 'draft' : req.user.role === 'admin' ? 'approved' : 'pending',
     };
 
-    // Only set location when valid coords are provided
-    const parsedLat = parseFloat(lat);
-    const parsedLng = parseFloat(lng);
-    if (!isNaN(parsedLat) && !isNaN(parsedLng)
-        && parsedLat >= -90 && parsedLat <= 90
-        && parsedLng >= -180 && parsedLng <= 180) {
-      storyData.location = { type: 'Point', coordinates: [parsedLng, parsedLat] };
-    }
-
     const story = await Story.create(storyData);
-
-    await story.populate('category', 'name slug icon color');
 
     if (!isDraft) {
       // Notify admins
@@ -274,17 +258,15 @@ exports.updateStory = async (req, res) => {
 
     // Whitelist only editable fields — never allow slug, _id, stats, or timestamps through
     const {
-      title, alternativeNames, state, district,
+      title, alternativeNames, country,
       category, shortDescription, fullStory,
       origin, significance, tags, coverImage, status,
-      lat, lng,
     } = req.body;
 
     const updates = {};
     if (title !== undefined)            updates.title            = title;
     if (alternativeNames !== undefined) updates.alternativeNames = alternativeNames;
-    if (state !== undefined)            updates.state            = state;
-    if (district !== undefined)         updates.district         = district;
+    if (country !== undefined)          updates.country          = country;
     if (category !== undefined)         updates.category         = category;
     if (shortDescription !== undefined) updates.shortDescription = shortDescription;
     if (fullStory !== undefined)        updates.fullStory        = fullStory;
@@ -305,22 +287,12 @@ exports.updateStory = async (req, res) => {
       }
     }
 
-    // Coerce lat/lng → GeoJSON location
-    const parsedLat = parseFloat(lat);
-    const parsedLng = parseFloat(lng);
-    if (!isNaN(parsedLat) && !isNaN(parsedLng)
-        && parsedLat >= -90 && parsedLat <= 90
-        && parsedLng >= -180 && parsedLng <= 180) {
-      updates.location = { type: 'Point', coordinates: [parsedLng, parsedLat] };
-    }
-
     // Allow contributor to re-submit (pending) or save draft
     if (status === 'pending' || status === 'draft') {
       updates.status = status;
     }
 
     story = await Story.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true })
-      .populate('category', 'name slug icon color')
       .populate('contributor', 'name username avatar');
 
     // Notify all admins when contributor resubmits for review
@@ -421,7 +393,6 @@ exports.getTrending = async (req, res) => {
   try {
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const stories = await Story.find({ status: 'approved', updatedAt: { $gte: since } })
-      .populate('category', 'name slug icon color')
       .populate('contributor', 'name username avatar')
       .sort('-views -averageRating')
       .limit(8)
@@ -436,7 +407,6 @@ exports.getTrending = async (req, res) => {
 exports.getFeatured = async (req, res) => {
   try {
     const stories = await Story.find({ status: 'approved', isFeatured: true })
-      .populate('category', 'name slug icon color')
       .populate('contributor', 'name username avatar')
       .sort('-views')
       .limit(5)
