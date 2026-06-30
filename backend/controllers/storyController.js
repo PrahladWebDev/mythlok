@@ -208,6 +208,14 @@ exports.createStory = async (req, res) => {
 
     const story = await Story.create(storyData);
 
+    // If the story is published immediately (admin direct publish), credit the
+    // contributor's storiesWritten count right away — reviewStory() only handles
+    // the case where a pending story gets approved later.
+    if (storyData.status === 'approved') {
+      await User.findByIdAndUpdate(req.user._id, { $inc: { storiesWritten: 1 } });
+      checkAndAwardAchievements(req.user._id).catch(() => {});
+    }
+
     if (!isDraft) {
       // Notify admins
       const admins = await User.find({ role: 'admin' }, '_id');
