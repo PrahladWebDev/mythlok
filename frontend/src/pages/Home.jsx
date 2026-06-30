@@ -5,38 +5,28 @@ import { fetchFeatured, fetchTrending } from '../store/slices/storySlice';
 import { openAuthModal } from '../store/slices/uiSlice';
 import StoryCard from '../components/story/StoryCard';
 import api from '../utils/api';
+import { CATEGORIES } from '../assets/data/categories';
 import heroBanner from "../assets/data/homeBanner.png";
 import './Home.css';
 
 /* ─── Static data ─────────────────────────────────────────── */
-const STATES = [
-  { name: 'Rajasthan',    emoji: '🏰', stories: '84', color: '#8B1A1A' },
-  { name: 'West Bengal',  emoji: '🌊', stories: '61', color: '#1A5276' },
-  { name: 'Kerala',       emoji: '🌴', stories: '53', color: '#117A65' },
-  { name: 'Nagaland',     emoji: '🪘', stories: '38', color: '#5D4E37' },
-  { name: 'Assam',        emoji: '🐘', stories: '47', color: '#4A0E8F' },
-  { name: 'Karnataka',    emoji: '💫', stories: '55', color: '#C17900' },
-];
-
-const CATEGORIES = [
-  { slug: 'ghost-stories',          name: 'Ghost Stories',         icon: '👻', color: '#4A0E8F' },
-  { slug: 'mythological-creatures', name: 'Mythological Creatures', icon: '🐉', color: '#8B1A1A' },
-  { slug: 'tribal-legends',         name: 'Tribal Legends',         icon: '🪘', color: '#5D4E37' },
-  { slug: 'sacred-places',          name: 'Sacred Places',          icon: '🛕', color: '#C17900' },
-  { slug: 'folk-tales',             name: 'Folk Tales',             icon: '📜', color: '#1A5276' },
-  { slug: 'cursed-places',          name: 'Cursed Places',          icon: '⛓️', color: '#641E16' },
-  { slug: 'nature-spirits',         name: 'Nature Spirits',         icon: '🌿', color: '#117A65' },
-  { slug: 'demigods-heroes',        name: 'Demigods & Heroes',      icon: '⚔️', color: '#1E8449' },
+const COUNTRIES_SECTION = [
+  { name: 'India',    emoji: '🇮🇳', stories: '84', color: '#8B1A1A' },
+  { name: 'Mexico',   emoji: '🌵', stories: '61', color: '#1A5276' },
+  { name: 'Ireland',  emoji: '☘️', stories: '53', color: '#117A65' },
+  { name: 'Japan',    emoji: '🎎', stories: '38', color: '#5D4E37' },
+  { name: 'Egypt',    emoji: '🐫', stories: '47', color: '#4A0E8F' },
+  { name: 'Greece',   emoji: '🏛️', stories: '55', color: '#C17900' },
 ];
 
 const VOICES = [
-  { quote: 'My grandmother told me the same story about the weeping woman near our well. Finding it here made me weep too.', name: 'Priya R.', loc: 'Jaipur, Rajasthan' },
-  { quote: 'I had never heard of yakshinis outside my village. This archive taught me they appear in twelve different states.', name: 'Arjun M.', loc: 'Mysuru, Karnataka' },
-  { quote: 'A researcher finally taking indigenous folklore seriously. This is what preservation looks like.', name: 'Meera T.', loc: 'Shillong, Meghalaya' },
+  { quote: 'My grandmother told me the same story about the weeping woman near our well. Finding it here made me weep too.', name: 'Priya R.', loc: 'Jaipur, India' },
+  { quote: 'I had never heard of these spirits outside my village. This archive taught me they appear in different countries too.', name: 'Arjun M.', loc: 'Mysuru, India' },
+  { quote: 'A researcher finally taking indigenous folklore seriously. This is what preservation looks like.', name: 'Meera T.', loc: 'Shillong, India' },
 ];
 
 const PROCESS = [
-  { icon: '📖', step: 'Read', desc: 'Explore 500+ verified stories from every Indian state.' },
+  { icon: '📖', step: 'Read', desc: 'Explore 500+ verified stories from every corner of the world.' },
   { icon: '✍️', step: 'Contribute', desc: 'Submit a legend from your region, family, or culture.' },
   { icon: '🔍', step: 'Review', desc: 'Our editorial team verifies and contextualises each story.' },
   { icon: '🌍', step: 'Preserve', desc: 'Approved stories join the living archive forever.' },
@@ -143,7 +133,7 @@ const Home = () => {
   const [statsVisible, setStatsVisible] = useState(false);
 
   const storiesCount = useCounter(statsVisible ? 500 : 0, 1600);
-  const statesCount  = useCounter(statsVisible ? 28  : 0, 1000);
+  const countriesCount = useCounter(statsVisible ? 20 : 0, 1000);
   const readersCount = useCounter(statsVisible ? 10000 : 0, 2000);
 
   useEffect(() => {
@@ -200,7 +190,7 @@ const Home = () => {
             <div className="lp-hero__text-content">
               <p className="lp-hero__eyebrow">
                 <span className="lp-hero__eyebrow-line" />
-                India's Living Folklore Archive
+                World Folklore Archive
                 <span className="lp-hero__eyebrow-line" />
               </p>
 
@@ -210,7 +200,7 @@ const Home = () => {
               </h1>
 
               <p className="lp-hero__subtitle">
-                Discover <Typewriter /> from all 28 Indian states —<br className="lp-hero__br"/>
+                Discover <Typewriter /> from 20+ countries around the world —<br className="lp-hero__br"/>
                 preserved by the communities who lived them.
               </p>
 
@@ -230,7 +220,7 @@ const Home = () => {
                   Explore Archive
                   <span className="lp-hero__cta-arrow">→</span>
                 </Link>
-                <Link to="/map" className="lp-hero__cta-secondary">🗺 India Map</Link>
+                <Link to="/map" className="lp-hero__cta-secondary">🗺 World Map</Link>
               </div>
             </div>
           </div>
@@ -248,8 +238,8 @@ const Home = () => {
           </div>
           <div className="lp-stats__sep" />
           <div className="lp-stats__item">
-            <span className="lp-stats__num">{statesCount}</span>
-            <span className="lp-stats__label">States Covered</span>
+            <span className="lp-stats__num">{countriesCount}</span>
+            <span className="lp-stats__label">Countries Covered</span>
           </div>
           <div className="lp-stats__sep" />
           <div className="lp-stats__item">
@@ -258,7 +248,7 @@ const Home = () => {
           </div>
           <div className="lp-stats__sep" />
           <div className="lp-stats__item">
-            <span className="lp-stats__num">8</span>
+            <span className="lp-stats__num">{CATEGORIES.length}</span>
             <span className="lp-stats__label">Story Categories</span>
           </div>
         </div>
@@ -287,45 +277,45 @@ const Home = () => {
       )}
 
       {/* ══════════════════════════════════════════════════════
-          STATES — Horizontal scroll with glow cards
+          COUNTRIES — Horizontal scroll with glow cards
       ══════════════════════════════════════════════════════ */}
       <section className="lp-section lp-states">
         <div className="container">
           <header className="lp-section__header">
             <div className="lp-section__label">Explore by Region</div>
-            <h2 className="lp-section__title">Journey Across India</h2>
+            <h2 className="lp-section__title">Journey Across the World</h2>
             <Link to="/map" className="lp-section__link">Open Map →</Link>
           </header>
         </div>
         <div className="lp-states__scroll-wrap">
           <div className="lp-states__track">
-            {STATES.map(state => (
+            {COUNTRIES_SECTION.map(country => (
               <Link
-                key={state.name}
-                to={`/states/${encodeURIComponent(state.name)}`}
+                key={country.name}
+                to={`/countries/${encodeURIComponent(country.name)}`}
                 className="lp-state-card"
-                style={{ '--state-color': state.color }}
+                style={{ '--state-color': country.color }}
               >
                 <div className="lp-state-card__glow" />
-                <span className="lp-state-card__emoji">{state.emoji}</span>
-                <span className="lp-state-card__name">{state.name}</span>
-                <span className="lp-state-card__count">{state.stories} tales</span>
+                <span className="lp-state-card__emoji">{country.emoji}</span>
+                <span className="lp-state-card__name">{country.name}</span>
+                <span className="lp-state-card__count">{country.stories} tales</span>
                 <span className="lp-state-card__arrow">→</span>
               </Link>
             ))}
-            {STATES.map(state => (
+            {COUNTRIES_SECTION.map(country => (
               <Link
-                key={`${state.name}-2`}
-                to={`/states/${encodeURIComponent(state.name)}`}
+                key={`${country.name}-2`}
+                to={`/countries/${encodeURIComponent(country.name)}`}
                 className="lp-state-card"
-                style={{ '--state-color': state.color }}
+                style={{ '--state-color': country.color }}
                 aria-hidden="true"
                 tabIndex={-1}
               >
                 <div className="lp-state-card__glow" />
-                <span className="lp-state-card__emoji">{state.emoji}</span>
-                <span className="lp-state-card__name">{state.name}</span>
-                <span className="lp-state-card__count">{state.stories} tales</span>
+                <span className="lp-state-card__emoji">{country.emoji}</span>
+                <span className="lp-state-card__name">{country.name}</span>
+                <span className="lp-state-card__count">{country.stories} tales</span>
                 <span className="lp-state-card__arrow">→</span>
               </Link>
             ))}
@@ -447,7 +437,7 @@ const Home = () => {
           </h2>
           <p className="lp-cta__body">
             Every family holds a legend passed through generations. Every region has a haunting
-            no outsider has written down. Help us preserve India's oral heritage before
+            no outsider has written down. Help us preserve oral heritage from around the world before
             the last teller falls silent.
           </p>
           <div className="lp-cta__actions">
