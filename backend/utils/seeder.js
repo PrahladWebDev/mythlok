@@ -5,7 +5,7 @@ const User = require('../models/User');
 const Story = require('../models/Story');
 const { Achievement } = require('../models/index');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/mythlok';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 // NOTE: Categories are hardcoded in backend/utils/categories.js — they are
 // NOT seeded into the database. Stories simply store a category slug.
