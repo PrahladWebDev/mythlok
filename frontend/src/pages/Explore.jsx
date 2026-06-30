@@ -2,19 +2,9 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import StoryCard from '../components/story/StoryCard';
 import api from '../utils/api';
-import { INDIAN_STATES } from '../assets/data/states';
+import { COUNTRIES } from '../assets/data/countries';
+import { CATEGORIES } from '../assets/data/categories';
 import './Explore.css';
-
-const CATEGORIES = [
-  { slug: 'ghost-stories', name: 'Ghost Stories', icon: '👻' },
-  { slug: 'mythological-creatures', name: 'Mythological Creatures', icon: '🐉' },
-  { slug: 'tribal-legends', name: 'Tribal Legends', icon: '🪘' },
-  { slug: 'sacred-places', name: 'Sacred Places', icon: '🛕' },
-  { slug: 'folk-tales', name: 'Folk Tales', icon: '📜' },
-  { slug: 'demigods-heroes', name: 'Demigods & Heroes', icon: '⚔️' },
-  { slug: 'nature-spirits', name: 'Nature Spirits', icon: '🌿' },
-  { slug: 'cursed-places', name: 'Cursed Places', icon: '⛓️' },
-];
 
 const SORTS = [
   { value: '-createdAt',     label: 'Newest' },
@@ -28,10 +18,9 @@ const Explore = () => {
   const [stories, setStories] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState([]);
 
   const search   = searchParams.get('search')   || '';
-  const state    = searchParams.get('state')     || '';
+  const country  = searchParams.get('country')  || '';
   const category = searchParams.get('category') || '';
   const sort     = searchParams.get('sort')      || '-createdAt';
   const page     = Number(searchParams.get('page') || 1);
@@ -64,12 +53,8 @@ const Explore = () => {
     try {
       const params = { page, limit: 12, sort };
       if (search) params.search = search;
-      if (state) params.state = state;
-      if (category) {
-        // find category id by slug
-        const cat = categories.find(c => c.slug === category);
-        if (cat) params.category = cat._id;
-      }
+      if (country) params.country = country;
+      if (category) params.category = category;
       const res = await api.get('/stories', { params });
       setStories(res.data.data);
       setPagination(res.data.pagination);
@@ -77,11 +62,7 @@ const Explore = () => {
       setStories([]);
     }
     setLoading(false);
-  }, [search, state, category, sort, page, categories]);
-
-  useEffect(() => {
-    api.get('/categories').then(r => setCategories(r.data.data)).catch(() => {});
-  }, []);
+  }, [search, country, category, sort, page]);
 
   useEffect(() => {
     fetchStories();
@@ -96,7 +77,7 @@ const Explore = () => {
 
   const clearFilters = () => setSearchParams({});
 
-  const hasFilters = search || state || category || sort !== '-createdAt';
+  const hasFilters = search || country || category || sort !== '-createdAt';
 
   return (
     <div className="explore">
@@ -105,7 +86,7 @@ const Explore = () => {
         <div className="container">
           <h1 className="explore__title">Explore Stories</h1>
           <p className="explore__subtitle">
-            {pagination ? `${pagination.total.toLocaleString()} stories from across India` : 'Searching the archives…'}
+            {pagination ? `${pagination.total.toLocaleString()} stories from around the world` : 'Searching the archives…'}
           </p>
         </div>
       </div>
@@ -141,13 +122,13 @@ const Explore = () => {
                 </select>
               </div>
 
-              {/* State */}
+              {/* Country */}
               <div className="explore__filter-group">
-                <label className="form-label">State</label>
-                <select className="form-select" value={state} onChange={e => updateParam('state', e.target.value)}>
-                  <option value="">All States</option>
-                  {INDIAN_STATES.map(s => (
-                    <option key={s.code} value={s.name}>{s.name}</option>
+                <label className="form-label">Country</label>
+                <select className="form-select" value={country} onChange={e => updateParam('country', e.target.value)}>
+                  <option value="">All Countries</option>
+                  {COUNTRIES.map(c => (
+                    <option key={c.code} value={c.name}>{c.emoji} {c.name}</option>
                   ))}
                 </select>
               </div>
@@ -180,7 +161,7 @@ const Explore = () => {
             {hasFilters && (
               <div className="explore__active-filters">
                 {search   && <span className="explore__filter-chip">🔍 "{search}" <button onClick={() => updateParam('search', '')}>✕</button></span>}
-                {state    && <span className="explore__filter-chip">📍 {state} <button onClick={() => updateParam('state', '')}>✕</button></span>}
+                {country  && <span className="explore__filter-chip">📍 {country} <button onClick={() => updateParam('country', '')}>✕</button></span>}
                 {category && <span className="explore__filter-chip">🏷 {CATEGORIES.find(c => c.slug === category)?.name || category} <button onClick={() => updateParam('category', '')}>✕</button></span>}
               </div>
             )}
