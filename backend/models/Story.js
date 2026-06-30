@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const { CATEGORIES } = require('../utils/categories');
 
 const storySchema = new mongoose.Schema({
   title: {
@@ -11,21 +12,16 @@ const storySchema = new mongoose.Schema({
   slug: { type: String, unique: true, index: true },
   alternativeNames: [{ type: String, trim: true }],
 
-  state: {
+  country: {
     type: String,
-    required: [true, 'State is required'],
+    required: [true, 'Country is required'],
     index: true,
-  },
-  district: { type: String, trim: true },
-  location: {
-    type: { type: String, enum: ['Point'], default: 'Point' },
-    coordinates: { type: [Number], default: [0, 0] }, // [lng, lat]
   },
 
   category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
+    type: String,
     required: [true, 'Category is required'],
+    enum: { values: CATEGORIES.map(c => c.slug), message: 'Invalid category.' },
     index: true,
   },
 
@@ -86,7 +82,6 @@ const storySchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // ─── Indexes ─────────────────────────────────────────────
-storySchema.index({ location: '2dsphere' });
 storySchema.index({ title: 'text', shortDescription: 'text', tags: 'text', alternativeNames: 'text' });
 
 // ─── Slug generation ──────────────────────────────────────
