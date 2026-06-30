@@ -5,7 +5,7 @@ import { fetchFeatured, fetchTrending } from '../store/slices/storySlice';
 import { openAuthModal } from '../store/slices/uiSlice';
 import StoryCard from '../components/story/StoryCard';
 import api from '../utils/api';
-import heroVideo from "../assets/data/Indian_mythology_hero_background_202606301026.mp4";
+import heroBanner from "../assets/data/homeBanner.png";
 import './Home.css';
 
 /* ─── Static data ─────────────────────────────────────────── */
@@ -141,7 +141,6 @@ const Home = () => {
   const [carouselIdx, setCarouselIdx] = useState(0);
   const statsRef = useRef();
   const [statsVisible, setStatsVisible] = useState(false);
-  const videoRef = useRef(null);
 
   const storiesCount = useCounter(statsVisible ? 500 : 0, 1600);
   const statesCount  = useCounter(statsVisible ? 28  : 0, 1000);
@@ -175,49 +174,29 @@ const Home = () => {
     return () => clearInterval(t);
   }, [featured.length]);
 
-  // Handle video autoplay
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(() => {
-        console.log('Video autoplay prevented');
-      });
-    }
-  }, []);
-
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) navigate(`/explore?search=${encodeURIComponent(searchQuery.trim())}`);
   };
 
   const heroStory = featured[carouselIdx] || featured[0];
+  const heroPlaceholder = heroBanner;
+  const heroBg = heroStory?.coverImage?.url || heroPlaceholder;
 
   return (
     <div className={`home ${heroLoaded ? 'home--loaded' : ''}`}>
 
       {/* ══════════════════════════════════════════════════════
-          HERO — Full video background with text overlay
+          HERO — Full image with text below
       ══════════════════════════════════════════════════════ */}
       <section className="lp-hero">
-        {/* Video Background */}
-        <div className="lp-hero__video-wrapper">
-          <video 
-            ref={videoRef}
-            className="lp-hero__video"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-          >
-            <source src={heroVideo} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-          <div className="lp-hero__overlay" />
+        <div className="lp-hero__image-wrapper">
+          <img src={heroBg} alt="MythLok Hero Banner" className="lp-hero__image" />
         </div>
         
-        {/* Text content overlay on video */}
-        <div className="lp-hero__content">
-          <div className="container lp-hero__container">
+        {/* Text content below the image */}
+        <div className="lp-hero__content-wrapper">
+          <div className="container">
             <div className="lp-hero__text-content">
               <p className="lp-hero__eyebrow">
                 <span className="lp-hero__eyebrow-line" />
