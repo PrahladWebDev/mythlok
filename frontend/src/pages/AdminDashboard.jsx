@@ -178,7 +178,7 @@ const AdminDashboard = () => {
                 { label: 'Published', value: analytics.totalApproved?.toLocaleString(), icon: '✅' },
                 { label: 'Pending Review', value: analytics.totalPending?.toLocaleString(), icon: '⏳' },
                 { label: 'Total Views', value: analytics.totalViews?.toLocaleString(), icon: '👁' },
-                { label: 'Top State', value: analytics.topState || '—', icon: '📍' },
+                { label: 'Top Country', value: analytics.topCountry || '—', icon: '📍' },
                 { label: 'Top Category', value: analytics.topCategory || '—', icon: '🏷' },
               ].map((stat, i) => (
                 <div key={i} className="admin__stat-card">
@@ -216,7 +216,7 @@ const AdminDashboard = () => {
                   <div className="admin__story-info">
                     <div className="admin__story-meta">
                       <span className="badge badge-saffron">⏳ Pending</span>
-                      <span className="admin__story-state">📍 {story.state}</span>
+                      <span className="admin__story-state">📍 {story.country}</span>
                       <span className="admin__story-date">
                         {new Date(story.createdAt).toLocaleDateString('en-IN')}
                       </span>
