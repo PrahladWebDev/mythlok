@@ -17,10 +17,10 @@ const checkAndAwardAchievements = async (userId) => {
     );
 
     const stats = {
-      stories_read:    user.storiesRead || 0,
-      stories_written: user.storiesWritten || 0,
-      states_explored: user.statesExplored?.length || 0,
-      likes_received:  user.totalLikesReceived || 0,
+      stories_read:       user.storiesRead || 0,
+      stories_written:    user.storiesWritten || 0,
+      countries_explored: user.countriesExplored?.length || 0,
+      likes_received:     user.totalLikesReceived || 0,
     };
 
     const toUnlock = allAchievements.filter(ach => {
