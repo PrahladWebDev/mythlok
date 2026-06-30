@@ -5,6 +5,7 @@ import { getMe } from '../store/slices/authSlice';
 import { openAuthModal } from '../store/slices/uiSlice';
 import api from '../utils/api';
 import StoryCard from '../components/story/StoryCard';
+import { getCategory } from '../assets/data/categories';
 import './Profile.css';
 
 const TABS = [
@@ -120,8 +121,8 @@ const Profile = ({ initialTab = 'overview' }) => {
                   <span className="profile__stat-label">Published</span>
                 </div>
                 <div className="profile__stat">
-                  <span className="profile__stat-num">{user.statesExplored?.length || 0}</span>
-                  <span className="profile__stat-label">States</span>
+                  <span className="profile__stat-num">{user.countriesExplored?.length || 0}</span>
+                  <span className="profile__stat-label">Countries</span>
                 </div>
                 <div className="profile__stat">
                   <span className="profile__stat-num">{user.achievements?.length || 0}</span>
@@ -139,18 +140,18 @@ const Profile = ({ initialTab = 'overview' }) => {
         </div>
       </div>
 
-      {/* States Explored progress */}
+      {/* Countries Explored progress */}
       <div className="profile__state-progress">
         <div className="container">
           <div className="profile__state-bar-wrap">
-            <span className="profile__state-label">India Explored</span>
+            <span className="profile__state-label">World Explored</span>
             <div className="profile__state-bar">
               <div
                 className="profile__state-fill"
-                style={{ width: `${Math.min(100, ((user.statesExplored?.length || 0) / 28) * 100)}%` }}
+                style={{ width: `${Math.min(100, ((user.countriesExplored?.length || 0) / 20) * 100)}%` }}
               />
             </div>
-            <span className="profile__state-count">{user.statesExplored?.length || 0} / 28 states</span>
+            <span className="profile__state-count">{user.countriesExplored?.length || 0} / 20 countries</span>
           </div>
         </div>
       </div>
@@ -175,20 +176,20 @@ const Profile = ({ initialTab = 'overview' }) => {
                 <h3>Reading Journey</h3>
                 <div className="profile__overview-stats">
                   <div><strong>{user.storiesRead}</strong><span>Stories read</span></div>
-                  <div><strong>{user.statesExplored?.length || 0}</strong><span>States explored</span></div>
+                  <div><strong>{user.countriesExplored?.length || 0}</strong><span>Countries explored</span></div>
                   <div><strong>{user.likesReceived || 0}</strong><span>Likes received</span></div>
                 </div>
               </div>
               <div className="profile__overview-card">
-                <h3>States Visited</h3>
-                {user.statesExplored?.length > 0 ? (
+                <h3>Countries Visited</h3>
+                {user.countriesExplored?.length > 0 ? (
                   <div className="profile__states-wrap">
-                    {user.statesExplored.map(s => (
-                      <Link key={s} to={`/states/${encodeURIComponent(s)}`} className="profile__state-chip">{s}</Link>
+                    {user.countriesExplored.map(c => (
+                      <Link key={c} to={`/countries/${encodeURIComponent(c)}`} className="profile__state-chip">{c}</Link>
                     ))}
                   </div>
                 ) : (
-                  <p className="profile__empty-hint">Start reading to explore states!</p>
+                  <p className="profile__empty-hint">Start reading to explore countries!</p>
                 )}
               </div>
             </div>
@@ -344,10 +345,10 @@ const Profile = ({ initialTab = 'overview' }) => {
                         }}
                       />
                       <div className="profile__history-info">
-                        <p className="profile__history-cat">{h.story.category?.icon} {h.story.category?.name}</p>
+                        <p className="profile__history-cat">{getCategory(h.story.category)?.icon} {getCategory(h.story.category)?.name}</p>
                         <h4 className="profile__history-title">{h.story.title}</h4>
                         <p className="profile__history-meta">
-                          📍 {h.story.state} ·
+                          📍 {h.story.country} ·
                           Read {new Date(h.readAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} ·
                           {h.timeSpent > 0 ? ` ${Math.round(h.timeSpent / 60)} min` : ''}
                         </p>
@@ -392,11 +393,11 @@ const Profile = ({ initialTab = 'overview' }) => {
                           >
                             {statusLabel[s.status] || s.status}
                           </span>
-                          {s.category && <span className="badge badge-gold">{s.category.icon} {s.category.name}</span>}
+                          {s.category && <span className="badge badge-gold">{getCategory(s.category)?.icon} {getCategory(s.category)?.name}</span>}
                         </div>
                         <h3 className="profile__contrib-title">{s.title}</h3>
                         <p className="profile__contrib-meta">
-                          📍 {s.state} · {new Date(s.createdAt).toLocaleDateString('en-IN')}
+                          📍 {s.country} · {new Date(s.createdAt).toLocaleDateString('en-IN')}
                           {s.averageRating > 0 && ` · ★ ${s.averageRating.toFixed(1)}`}
                           {s.views > 0 && ` · 👁 ${s.views.toLocaleString()}`}
                         </p>
