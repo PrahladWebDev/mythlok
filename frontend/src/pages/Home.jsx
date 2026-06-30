@@ -6,7 +6,7 @@ import { openAuthModal } from '../store/slices/uiSlice';
 import StoryCard from '../components/story/StoryCard';
 import api from '../utils/api';
 import { CATEGORIES } from '../assets/data/categories';
-import heroBanner from "../assets/data/homeBanner.png";
+import heroBanner from "../assets/data/hero.png";
 import './Home.css';
 
 /* ─── Static data ─────────────────────────────────────────── */
