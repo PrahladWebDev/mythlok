@@ -5,6 +5,7 @@ import { fetchStory } from '../store/slices/storySlice';
 import { openAuthModal } from '../store/slices/uiSlice';
 import api from '../utils/api';
 import StoryCard from '../components/story/StoryCard';
+import { getCategory } from '../assets/data/categories';
 import toast from 'react-hot-toast';
 import './StoryDetail.css';
 
@@ -303,7 +304,7 @@ const StoryDetail = () => {
             <span>/</span>
             <Link to="/explore">Explore</Link>
             <span>/</span>
-            <Link to={`/states/${encodeURIComponent(story.state)}`}>{story.state}</Link>
+            <Link to={`/countries/${encodeURIComponent(story.country)}`}>{story.country}</Link>
             <span>/</span>
             <span>{story.title}</span>
           </nav>
@@ -311,7 +312,7 @@ const StoryDetail = () => {
           <div className="story-detail__meta-row">
             {story.category && (
               <span className="badge badge-gold">
-                {story.category.icon} {story.category.name}
+                {getCategory(story.category)?.icon} {getCategory(story.category)?.name}
               </span>
             )}
             {story.isFeatured && <span className="badge badge-saffron">⭐ Featured</span>}
@@ -326,7 +327,7 @@ const StoryDetail = () => {
           )}
 
           <div className="story-detail__info-row">
-            <span>📍 {story.state}{story.district ? `, ${story.district}` : ''}</span>
+            <span>📍 {story.country}</span>
             <span>👁 {story.views?.toLocaleString()} views</span>
             <span>★ {story.averageRating?.toFixed(1) || 'Unrated'} ({story.totalRatings || 0} ratings)</span>
             <span>💬 {story.totalComments || 0} comments</span>
@@ -510,10 +511,10 @@ const StoryDetail = () => {
                 📤 Share
               </button>
               <Link
-                to={`/explore?state=${encodeURIComponent(story.state)}`}
+                to={`/explore?country=${encodeURIComponent(story.country)}`}
                 className="story-detail__action-btn"
               >
-                🗺 More from {story.state}
+                🗺 More from {story.country}
               </Link>
             </div>
 
@@ -521,9 +522,8 @@ const StoryDetail = () => {
             <div className="story-detail__info-card">
               <h4>Story Details</h4>
               <dl className="story-detail__info-list">
-                <dt>State</dt><dd>{story.state}</dd>
-                {story.district && <><dt>District</dt><dd>{story.district}</dd></>}
-                <dt>Category</dt><dd>{story.category?.icon} {story.category?.name}</dd>
+                <dt>Country</dt><dd>{story.country}</dd>
+                <dt>Category</dt><dd>{getCategory(story.category)?.icon} {getCategory(story.category)?.name}</dd>
                 <dt>Views</dt><dd>{story.views?.toLocaleString()}</dd>
                 <dt>Rating</dt><dd>★ {story.averageRating?.toFixed(1) || 'N/A'}</dd>
                 <dt>Added</dt><dd>{new Date(story.createdAt).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}</dd>
@@ -542,7 +542,7 @@ const StoryDetail = () => {
                     />
                     <div>
                       <p className="story-detail__related-title">{r.title}</p>
-                      <p className="story-detail__related-meta">📍 {r.state}</p>
+                      <p className="story-detail__related-meta">📍 {r.country}</p>
                     </div>
                   </Link>
                 ))}
