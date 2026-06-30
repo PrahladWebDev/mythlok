@@ -1,13 +1,14 @@
 const User = require('../models/User');
 const Story = require('../models/Story');
 const { Notification, Report, Achievement } = require('../models/index');
+const { getCategory } = require('../utils/categories');
 
 // ─── Admin Analytics ──────────────────────────────────────
 exports.getAnalytics = async (req, res) => {
   try {
     const [
       totalUsers, totalStories, totalApproved, totalPending,
-      topStory, topState, topCategory, topContributor,
+      topStory, topCountry, topCategory, topContributor,
     ] = await Promise.all([
       User.countDocuments({ isActive: true }),
       Story.countDocuments(),
@@ -16,7 +17,7 @@ exports.getAnalytics = async (req, res) => {
       Story.findOne({ status: 'approved' }).sort('-views').select('title slug views'),
       Story.aggregate([
         { $match: { status: 'approved' } },
-        { $group: { _id: '$state', count: { $sum: 1 } } },
+        { $group: { _id: '$country', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 1 },
       ]),
@@ -25,7 +26,6 @@ exports.getAnalytics = async (req, res) => {
         { $group: { _id: '$category', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 1 },
-        { $lookup: { from: 'categories', localField: '_id', foreignField: '_id', as: 'cat' } },
       ]),
       User.find({ role: { $in: ['contributor', 'admin'] } })
         .sort('-storiesWritten')
@@ -47,8 +47,8 @@ exports.getAnalytics = async (req, res) => {
         totalPending,
         totalViews: totalViews[0]?.total || 0,
         topStory,
-        topState: topState[0]?._id || 'N/A',
-        topCategory: topCategory[0]?.cat?.[0]?.name || 'N/A',
+        topCountry: topCountry[0]?._id || 'N/A',
+        topCategory: getCategory(topCategory[0]?._id)?.name || 'N/A',
         topContributor: topContributor[0] || null,
       },
     });
@@ -178,7 +178,7 @@ exports.getLeaderboard = async (req, res) => {
       User.find({ isActive: true, isBlocked: false })
         .sort('-storiesRead')
         .limit(10)
-        .select('name username avatar storiesRead statesExplored'),
+        .select('name username avatar storiesRead countriesExplored'),
       User.find({ role: { $in: ['contributor', 'admin'] }, isActive: true, isBlocked: false })
         .sort('-storiesWritten')
         .limit(10)
@@ -186,8 +186,7 @@ exports.getLeaderboard = async (req, res) => {
       Story.find({ status: 'approved' })
         .sort('-views')
         .limit(10)
-        .select('title slug coverImage views averageRating state')
-        .populate('category', 'name icon'),
+        .select('title slug coverImage views averageRating country category'),
     ]);
     res.json({ success: true, data: { topReaders, topContributors, topStories } });
   } catch (err) {
@@ -195,14 +194,14 @@ exports.getLeaderboard = async (req, res) => {
   }
 };
 
-// ─── State Stats ──────────────────────────────────────────
-exports.getStateStats = async (req, res) => {
+// ─── Country Stats ────────────────────────────────────────
+exports.getCountryStats = async (req, res) => {
   try {
     const stats = await Story.aggregate([
       { $match: { status: 'approved' } },
       {
         $group: {
-          _id: '$state',
+          _id: '$country',
           storyCount: { $sum: 1 },
           totalViews: { $sum: '$views' },
           avgRating: { $avg: '$averageRating' },
@@ -212,23 +211,6 @@ exports.getStateStats = async (req, res) => {
     ]);
     res.json({ success: true, data: stats });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Failed to fetch state stats.' });
-  }
-};
-
-// ─── Category Stats ───────────────────────────────────────
-exports.getCategoryStats = async (req, res) => {
-  try {
-    const stats = await Story.aggregate([
-      { $match: { status: 'approved' } },
-      { $group: { _id: '$category', count: { $sum: 1 } } },
-      { $lookup: { from: 'categories', localField: '_id', foreignField: '_id', as: 'cat' } },
-      { $unwind: '$cat' },
-      { $project: { name: '$cat.name', icon: '$cat.icon', color: '$cat.color', count: 1 } },
-      { $sort: { count: -1 } },
-    ]);
-    res.json({ success: true, data: stats });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Failed to fetch category stats.' });
+    res.status(500).json({ success: false, message: 'Failed to fetch country stats.' });
   }
 };
