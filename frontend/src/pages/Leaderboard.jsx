@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
+import { getCategory } from '../assets/data/categories';
 import './Leaderboard.css';
 
 const Leaderboard = () => {
@@ -30,7 +31,7 @@ const Leaderboard = () => {
         <div className="container">
           <p className="section-eyebrow">Hall of Fame</p>
           <h1>Leaderboard</h1>
-          <p className="leaderboard__subtitle">The most devoted seekers and storytellers of Indian folklore.</p>
+          <p className="leaderboard__subtitle">The most devoted seekers and storytellers of world folklore.</p>
         </div>
       </div>
 
@@ -69,8 +70,8 @@ const Leaderboard = () => {
                     <span>Stories Read</span>
                   </div>
                   <div className="leaderboard__user-stat">
-                    <span>{u.statesExplored?.length || 0}</span>
-                    <span>States</span>
+                    <span>{u.countriesExplored?.length || 0}</span>
+                    <span>Countries</span>
                   </div>
                 </div>
               </div>
@@ -127,9 +128,9 @@ const Leaderboard = () => {
                   }}
                 />
                 <div className="leaderboard__story-info">
-                  <p className="leaderboard__story-cat">{story.category?.icon} {story.category?.name}</p>
+                  <p className="leaderboard__story-cat">{getCategory(story.category)?.icon} {getCategory(story.category)?.name}</p>
                   <h3 className="leaderboard__story-title">{story.title}</h3>
-                  <p className="leaderboard__story-state">📍 {story.state}</p>
+                  <p className="leaderboard__story-state">📍 {story.country}</p>
                 </div>
                 <div className="leaderboard__story-stats">
                   <div className="leaderboard__user-stat">
