@@ -32,7 +32,7 @@ if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 // ─── Routes ──────────────────────────────────────────────
 app.use('/api/auth',          require('./routes/auth'));
 app.use('/api/stories',       require('./routes/stories'));
-app.use('/api/states',        require('./routes/states'));
+app.use('/api/countries',     require('./routes/countries'));
 app.use('/api/categories',    require('./routes/categories'));
 app.use('/api/comments/:storyId', require('./routes/comments'));
 app.use('/api/comments',          require('./routes/comments'));
