@@ -41,7 +41,7 @@ const Navbar = () => {
   const navLinks = [
     { to: '/', label: 'Home', exact: true },
     { to: '/explore', label: 'Explore' },
-    { to: '/map', label: 'India Map' },
+    { to: '/map', label: 'World Map' },
     { to: '/leaderboard', label: 'Leaderboard' },
   ];
 
