@@ -1,36 +1,26 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 require('dotenv').config({ path: '../.env' });
 
 const User = require('../models/User');
 const Story = require('../models/Story');
-const Category = require('../models/Category');
 const { Achievement } = require('../models/index');
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/mythlok';
 
-const categories = [
-  { name: 'Ghost Stories',           slug: 'ghost-stories',           icon: '👻', color: '#4A0E8F', description: 'Haunted places, spirits, and supernatural encounters across India.' },
-  { name: 'Mythological Creatures',  slug: 'mythological-creatures',  icon: '🐉', color: '#8B1A1A', description: 'Legendary beasts, divine beings, and magical entities.' },
-  { name: 'Tribal Legends',          slug: 'tribal-legends',          icon: '🪘', color: '#5D4E37', description: 'Ancient stories passed down by tribal communities.' },
-  { name: 'Sacred Places',           slug: 'sacred-places',           icon: '🛕', color: '#C17900', description: 'Holy sites, temples, and places of spiritual power.' },
-  { name: 'Folk Tales',              slug: 'folk-tales',              icon: '📜', color: '#1A5276', description: 'Traditional stories of everyday heroes and magical encounters.' },
-  { name: 'Demigods & Heroes',       slug: 'demigods-heroes',         icon: '⚔️', color: '#1E8449', description: 'Legends of mighty warriors and divine heroes.' },
-  { name: 'Nature Spirits',          slug: 'nature-spirits',          icon: '🌿', color: '#117A65', description: 'Spirits of rivers, forests, mountains, and natural elements.' },
-  { name: 'Cursed Places',           slug: 'cursed-places',           icon: '⛓️', color: '#641E16', description: 'Sites bearing ancient curses, warnings, and dark histories.' },
-];
+// NOTE: Categories are hardcoded in backend/utils/categories.js — they are
+// NOT seeded into the database. Stories simply store a category slug.
 
 const achievements = [
-  { key: 'first_read',    title: 'First Tale',         description: 'Read your first story',         icon: '📖', xpValue: 5,   condition: { type: 'stories_read',     threshold: 1 } },
-  { key: 'read_10',       title: 'Story Seeker',       description: 'Read 10 stories',               icon: '🔍', xpValue: 15,  condition: { type: 'stories_read',     threshold: 10 } },
-  { key: 'read_50',       title: 'Myth Keeper',        description: 'Read 50 stories',               icon: '🗺️', xpValue: 50,  condition: { type: 'stories_read',     threshold: 50 } },
-  { key: 'read_100',      title: 'Legend Archivist',   description: 'Read 100 stories',              icon: '🏛️', xpValue: 100, condition: { type: 'stories_read',     threshold: 100 } },
-  { key: 'explore_5',     title: 'State Wanderer',     description: 'Explore stories from 5 states', icon: '🧭', xpValue: 20,  condition: { type: 'states_explored',  threshold: 5 } },
-  { key: 'explore_15',    title: 'Desh Yatri',         description: 'Explore 15 states',             icon: '🗺️', xpValue: 60,  condition: { type: 'states_explored',  threshold: 15 } },
-  { key: 'explore_all',   title: 'Bharata Explorer',   description: 'Stories from every state',      icon: '🇮🇳', xpValue: 200, condition: { type: 'states_explored',  threshold: 28 } },
-  { key: 'first_story',   title: 'Voice of the Past',  description: 'Submit your first story',       icon: '✍️', xpValue: 25,  condition: { type: 'stories_written',  threshold: 1 } },
-  { key: 'write_10',      title: 'Story Weaver',       description: 'Submit 10 stories',             icon: '🕸️', xpValue: 75,  condition: { type: 'stories_written',  threshold: 10 } },
-  { key: 'likes_100',     title: 'Beloved Narrator',   description: 'Receive 100 likes',             icon: '❤️', xpValue: 50,  condition: { type: 'likes_received',   threshold: 100 } },
+  { key: 'first_read',     title: 'First Tale',           description: 'Read your first story',           icon: '📖', xpValue: 5,   condition: { type: 'stories_read',       threshold: 1 } },
+  { key: 'read_10',        title: 'Story Seeker',         description: 'Read 10 stories',                 icon: '🔍', xpValue: 15,  condition: { type: 'stories_read',       threshold: 10 } },
+  { key: 'read_50',        title: 'Myth Keeper',          description: 'Read 50 stories',                 icon: '🗺️', xpValue: 50,  condition: { type: 'stories_read',       threshold: 50 } },
+  { key: 'read_100',       title: 'Legend Archivist',     description: 'Read 100 stories',                icon: '🏛️', xpValue: 100, condition: { type: 'stories_read',       threshold: 100 } },
+  { key: 'explore_5',      title: 'World Wanderer',       description: 'Explore stories from 5 countries', icon: '🧭', xpValue: 20,  condition: { type: 'countries_explored', threshold: 5 } },
+  { key: 'explore_10',     title: 'Global Yatri',         description: 'Explore 10 countries',            icon: '🗺️', xpValue: 60,  condition: { type: 'countries_explored', threshold: 10 } },
+  { key: 'explore_all',    title: 'World Explorer',       description: 'Stories from every country',      icon: '🌍', xpValue: 200, condition: { type: 'countries_explored', threshold: 20 } },
+  { key: 'first_story',    title: 'Voice of the Past',    description: 'Submit your first story',         icon: '✍️', xpValue: 25,  condition: { type: 'stories_written',    threshold: 1 } },
+  { key: 'write_10',       title: 'Story Weaver',         description: 'Submit 10 stories',               icon: '🕸️', xpValue: 75,  condition: { type: 'stories_written',    threshold: 10 } },
+  { key: 'likes_100',      title: 'Beloved Narrator',     description: 'Receive 100 likes',               icon: '❤️', xpValue: 50,  condition: { type: 'likes_received',     threshold: 100 } },
 ];
 
 async function seed() {
@@ -42,14 +32,9 @@ async function seed() {
     await Promise.all([
       User.deleteMany({}),
       Story.deleteMany({}),
-      Category.deleteMany({}),
       Achievement.deleteMany({}),
     ]);
     console.log('🗑️  Cleared existing data');
-
-    // Seed categories
-    const cats = await Category.insertMany(categories);
-    console.log(`✅ Seeded ${cats.length} categories`);
 
     // Seed achievements
     await Achievement.insertMany(achievements);
@@ -71,8 +56,8 @@ async function seed() {
       email: 'arjun@mythlok.com',
       password: 'User@123',
       role: 'contributor',
-      bio: 'Folklore researcher from Rajasthan, passionate about preserving oral traditions.',
-      state: 'Rajasthan',
+      bio: 'Folklore researcher passionate about preserving oral traditions.',
+      country: 'India',
       storiesWritten: 3,
     });
 
@@ -82,25 +67,22 @@ async function seed() {
       email: 'priya@mythlok.com',
       password: 'User@123',
       role: 'user',
-      bio: 'Kerala native fascinated by South Indian mythology.',
+      bio: 'Fascinated by world mythology and folklore.',
+      country: 'India',
       storiesRead: 12,
     });
 
     console.log('✅ Seeded 3 users');
-
-    const catMap = {};
-    cats.forEach(c => catMap[c.slug] = c._id);
 
     // Seed stories
     const stories = [
       {
         title: 'Bhangarh Fort: India\'s Most Haunted Place',
         alternativeNames: ['Bhangad', 'The Cursed Citadel'],
-        state: 'Rajasthan',
-        district: 'Alwar',
-        category: catMap['cursed-places'],
+        country: 'India',
+        category: 'cursed-places',
         shortDescription: 'A 17th-century fort abandoned after a sorcerer\'s curse, where no one dares stay past sunset — not even the government allows overnight stays.',
-        fullStory: `Built in 1573 by Bhagwant Das for his son Madho Singh, Bhangarh Fort stands as a magnificent ruin in the Aravalli Hills of Rajasthan. But beneath its historical grandeur lies a chilling legend that has made it the most feared place in India.
+        fullStory: `Built in 1573 by Bhagwant Das for his son Madho Singh, Bhangarh Fort stands as a magnificent ruin in the Aravalli Hills of Rajasthan, India. But beneath its historical grandeur lies a chilling legend that has made it one of the most feared places in the country.
 
 The most popular legend revolves around Singhia, a powerful tantric who fell hopelessly in love with the beautiful Princess Ratnavati of Bhangarh. Knowing he could never win her heart through normal means, Singhia decided to use black magic. He cast a spell on the perfumed oil the princess had purchased, hoping it would make her fall under his control.
 
@@ -111,9 +93,9 @@ Shortly after, a battle broke out. The entire population of Bhangarh — includi
 The Archaeological Survey of India has placed an unusual warning board at the fort's entrance: "Staying after sunset is strictly prohibited." Local villagers refuse to build homes taller than the ruins, believing the spirits will punish them.
 
 Visitors report hearing unexplained sounds, experiencing cold spots, and seeing shadowy figures near the ancient temples within the fort grounds. Paranormal investigators from around the world have documented equipment malfunctions and unexplained temperature anomalies.`,
-        origin: 'The legend dates to 1573 CE during the reign of Madho Singh, son of Raja Bhagwant Das of the Kachwaha clan. The fort served as a thriving city before being abandoned in the early 18th century.',
-        significance: 'Bhangarh remains one of the few places in India officially acknowledged by the government as paranormally active. It represents the complex interplay between historical tragedy and supernatural belief in Rajasthani culture.',
-        tags: ['bhangarh', 'fort', 'haunted', 'rajasthan', 'ghost', 'curse', 'princess', 'tantric'],
+        origin: 'The legend dates to 1573 CE during the reign of Madho Singh, son of Raja Bhagwant Das of the Kachwaha clan.',
+        significance: 'Bhangarh remains one of the few places officially acknowledged by the government as paranormally active.',
+        tags: ['bhangarh', 'fort', 'haunted', 'india', 'ghost', 'curse', 'princess', 'tantric'],
         contributor: contributor._id,
         status: 'approved',
         isFeatured: true,
@@ -124,9 +106,8 @@ Visitors report hearing unexplained sounds, experiencing cold spots, and seeing 
       {
         title: 'Nale Ba: The Ghost Who Calls Your Name',
         alternativeNames: ['Come Tomorrow', 'Nale Baa'],
-        state: 'Karnataka',
-        district: 'Bangalore',
-        category: catMap['ghost-stories'],
+        country: 'India',
+        category: 'ghost-stories',
         shortDescription: 'In 1990s Bangalore, people wrote "Nale Ba" (Come Tomorrow) on their doors to ward off a female ghost who killed anyone who answered her knock at night.',
         fullStory: `In the early 1990s, a mass hysteria gripped Bangalore that remains one of the most fascinating episodes of collective folklore in modern India. The legend of "Nale Ba" — Kannada for "Come Tomorrow" — spread through the city like wildfire, prompting thousands of households to scrawl these two words on their doors.
 
@@ -136,12 +117,10 @@ But she was bound by rules, as all powerful spirits are. If she saw the words "N
 
 The rumor spread faster than any newspaper headline. Chalk inscriptions appeared on walls, doors, and gates across Bangalore, Mysore, and surrounding towns. Even educated, urban households participated — not because they truly believed, but because the price of skepticism felt too high.
 
-Folklorists who studied the phenomenon noted it mirrored ancient apotropaic traditions — the use of written words to ward off evil — found across many world cultures. The Nale Ba panic was unique in being a living, viral piece of folklore in a modern city, predating the internet age entirely.
-
-Today, faded "Nale Ba" inscriptions can still be found on old walls in parts of Bangalore, silent witnesses to a collective dream of fear and protection.`,
-        origin: 'The Nale Ba phenomenon emerged circa 1990-1995 in Bangalore, Karnataka. Its exact origin is unknown — the legend seemed to emerge spontaneously from multiple sources simultaneously, a true example of communal folklore creation.',
-        significance: 'Nale Ba represents one of India\'s most documented cases of urban folklore panic. It demonstrates how ancient supernatural beliefs adapt to modern settings and how communities create collective protective rituals during times of anxiety.',
-        tags: ['nale ba', 'karnataka', 'bangalore', 'ghost', 'witch', 'churel', '1990s', 'urban legend'],
+Folklorists who studied the phenomenon noted it mirrored ancient apotropaic traditions — the use of written words to ward off evil — found across many world cultures.`,
+        origin: 'The Nale Ba phenomenon emerged circa 1990-1995 in Bangalore, India. Its exact origin is unknown — a true example of communal folklore creation.',
+        significance: 'Nale Ba represents one of India\'s most documented cases of urban folklore panic.',
+        tags: ['nale ba', 'bangalore', 'india', 'ghost', 'witch', 'churel', '1990s', 'urban legend'],
         contributor: contributor._id,
         status: 'approved',
         isFeatured: true,
@@ -152,9 +131,8 @@ Today, faded "Nale Ba" inscriptions can still be found on old walls in parts of 
       {
         title: 'Vetala: The Undead Storyteller of Ancient India',
         alternativeNames: ['Baital', 'Vetal', 'Vetala of Vikramaditya'],
-        state: 'Madhya Pradesh',
-        district: 'Ujjain',
-        category: catMap['mythological-creatures'],
+        country: 'India',
+        category: 'mythological-creatures',
         shortDescription: 'An ancient undead being that inhabits corpses, the Vetala tested King Vikramaditya\'s wisdom through 25 riddles across Indian mythology\'s most beloved puzzle tales.',
         fullStory: `In the treasury of Sanskrit literature, few figures are as philosophically rich as the Vetala — a supernatural entity that occupies the bodies of the recently deceased, animating them with its ancient consciousness.
 
@@ -164,11 +142,9 @@ The most famous appearance of the Vetala comes in the Baital Pachisi — the Twe
 
 But the Vetala is the greatest storyteller of the underworld. Each time Vikramaditya carries it, the Vetala tells a story ending with a moral riddle. If the king knows the answer and remains silent, his head will shatter. So Vikramaditya must answer — and the moment he does, the Vetala flies back to its tree. This cycle repeats through 24 tales.
 
-In these stories, the Vetala probes the deepest questions: Who truly loves? Who deserves justice? What makes a decision righteous? Its tales are sophisticated moral philosophy disguised as horror.
-
-The physical description of the Vetala varies across texts: sometimes gaunt and grey, sometimes appearing perfectly normal save for its backwards feet — a common marker of supernatural beings in South Asian folklore. It is repelled by mantras and sacred fire, and can be permanently laid to rest only through proper funeral rites for the corpse it inhabits.`,
-        origin: 'The Vetala appears in ancient Sanskrit texts including the Kathāsaritsāgara (Ocean of the Streams of Story) compiled in the 11th century CE by Somadeva. The Baital Pachisi tales are believed to derive from even older oral traditions.',
-        significance: 'The Vetala represents a sophisticated philosophical tradition within Indian horror folklore — one that uses supernatural horror as a vehicle for ethical inquiry. It influenced countless storytelling traditions across Asia.',
+In these stories, the Vetala probes the deepest questions: Who truly loves? Who deserves justice? What makes a decision righteous? Its tales are sophisticated moral philosophy disguised as horror.`,
+        origin: 'The Vetala appears in ancient Sanskrit texts including the Kathāsaritsāgara, compiled in the 11th century CE by Somadeva.',
+        significance: 'The Vetala represents a sophisticated philosophical tradition within Indian horror folklore.',
         tags: ['vetala', 'baital', 'vikramaditya', 'ujjain', 'undead', 'sanskrit', 'mythology', 'riddles'],
         contributor: adminUser._id,
         status: 'approved',
@@ -178,54 +154,44 @@ The physical description of the Vetala varies across texts: sometimes gaunt and 
         totalRatings: 156,
       },
       {
-        title: 'The Nagas of Nagaland: Serpent Ancestors of the Hill People',
-        alternativeNames: ['Naga Spirits', 'Serpent Clan', 'Dragon Ancestors'],
-        state: 'Nagaland',
-        district: 'Kohima',
-        category: catMap['tribal-legends'],
-        shortDescription: 'The Naga tribes of Northeast India trace their ancestry to giant serpents, with traditions, tattoos, and morungs that still carry the power of their serpentine forebears.',
-        fullStory: `Long before the written word reached the hills of Northeast India, the Naga peoples carried their history in song, dance, and the ink pressed into their skin. And at the heart of many Naga origin myths coils a great serpent — ancient, powerful, and kin.
+        title: 'The Banshee: Ireland\'s Wailing Death Omen',
+        alternativeNames: ['Bean Sí', 'The Washer at the Ford'],
+        country: 'Ireland',
+        category: 'folk-tales',
+        shortDescription: 'A spectral woman whose mournful wail is said to foretell the death of a family member — one of Ireland\'s oldest and most feared supernatural traditions.',
+        fullStory: `Long before written history, Irish families spoke in hushed tones of the banshee — a fairy woman whose keening cry pierces the night to announce that death is near.
 
-Different Naga tribes hold different variations of the origin story. Among the Angami Nagas, the ancestor emerged from beneath the earth where a great serpent-spirit dwelled. The people took strength from this bond, and their warriors earned the right to wear the hornbill feather and the serpent tattoo only after proving themselves in battle.
+The banshee is said to attach herself to certain old Irish families, appearing — or rather, being heard — whenever a member of that bloodline is about to die. Her cry, the caoineadh, is described as a mixture of mourning song and animal howl, impossible to mistake for anything human.
 
-The Naga tradition of head-hunting — now long abandoned — was deeply tied to serpent mythology. The head was believed to contain the soul's power, and rituals surrounding head-hunting involved prayers to serpent spirits for protection and victory. The morung — the traditional dormitory and meeting hall of Naga villages — was often decorated with carved serpents along the posts and beams, guardian spirits watching over the young men who slept and trained within.
+Some traditions describe her as a beautiful young woman with long, flowing hair, dressed in grey or white, combing her hair with a silver comb. Others describe her as a withered old hag, her eyes red and swollen from centuries of grieving. Regional variations across Ireland gave rise to different forms, including the Washer at the Ford, who is seen rinsing bloodstained burial garments in a river the night before a death.
 
-Among the Konyak Nagas, certain lineages were said to have the power to call rain by invoking their serpent ancestors. Drought would bring the village elders to specific stones or pools where the serpent spirits were believed to rest, and they would make offerings of rice beer, eggs, and flowers.
-
-Even today, the serpent motif appears in Naga shawls, jewelry, and tattoos. Young people learning traditional crafts are taught that these patterns are not merely decoration — they are conversations with ancestors who slithered before humanity walked upright.`,
-        origin: 'Naga oral traditions date back millennia, predating written records. The serpent mythology is pan-Naga but varies significantly between the 16+ major tribes including Angami, Ao, Sumi, Konyak, Lotha, and others.',
-        significance: 'Naga serpent mythology represents one of India\'s richest indigenous knowledge systems. It connects ecological observation (snakes as symbols of rebirth through shedding) with social structure and spiritual practice.',
-        tags: ['naga', 'nagaland', 'tribal', 'serpent', 'northeast india', 'morung', 'tattoo', 'ancestor'],
-        contributor: contributor._id,
+Even today, the banshee remains one of Ireland's most enduring folk figures, kept alive through oral storytelling, literature, and a lingering cultural unease about unexplained cries on quiet rural nights.`,
+        origin: 'Banshee folklore traces back over a thousand years in Irish oral tradition, with the earliest written references appearing in medieval texts.',
+        significance: 'The banshee reflects deep Irish cultural attitudes toward death, family lineage, and mourning rituals.',
+        tags: ['banshee', 'ireland', 'death omen', 'folklore', 'fairy', 'keening'],
+        contributor: adminUser._id,
         status: 'approved',
-        views: 3240,
-        averageRating: 4.6,
-        totalRatings: 98,
+        views: 3120,
+        averageRating: 4.4,
+        totalRatings: 88,
       },
       {
-        title: 'Padmanabhaswamy Temple: The Vault That Cannot Be Opened',
-        alternativeNames: ['The Forbidden Chamber', 'Vault B', 'Temple of Endless Treasure'],
-        state: 'Kerala',
-        district: 'Thiruvananthapuram',
-        category: catMap['sacred-places'],
-        shortDescription: 'A 16th-century temple with underground vaults holding billions in treasure — but one vault, sealed by a cobra-inscribed door, is believed to bring catastrophe if opened.',
-        fullStory: `Beneath the golden gopuram of Padmanabhaswamy Temple in Thiruvananthapuram lies one of the greatest mysteries of the ancient world: Vault B, a chamber sealed not by locks, but by belief, tradition, and the image of two cobras carved into its door.
+        title: 'La Llorona: The Weeping Woman of Mexico',
+        alternativeNames: ['The Weeping Woman'],
+        country: 'Mexico',
+        category: 'ghost-stories',
+        shortDescription: 'A grief-stricken ghost wanders riverbanks at night searching for the children she drowned, her mournful cries warning of danger to anyone who hears them.',
+        fullStory: `Across Mexico and much of Latin America, parents have long warned children not to wander near rivers after dark — for fear of La Llorona, the Weeping Woman.
 
-When the Supreme Court of India ordered the temple's vaults opened in 2011, what emerged from Vaults A, C, D, E, and F stunned the world: gold coins dating to Roman times, diamond-studded crowns, thousands of gold statues, precious gems of unimaginable quantity — valuables estimated at over ₹1 lakh crore (approximately $15 billion), making it the richest temple on earth.
+According to the most common version of the legend, a beautiful woman named Maria fell in love with a man who eventually abandoned her and their two children for another woman. In a fit of grief and rage, Maria drowned her children in a river, only to be consumed by immediate and eternal regret. She drowned herself shortly after, but legend says she was denied entry into the afterlife until she found her children.
 
-But Vault B remained sealed.
+Ever since, her spirit roams riverbanks, lakes, and waterways at night, dressed in white, wailing "¡Ay, mis hijos!" ("Oh, my children!"). Those who hear her cries are said to be in danger — some traditions hold that she mistakes other children for her own and tries to take them, while others say merely hearing her cry is an omen of misfortune.
 
-The reason is not legal or administrative — it is spiritual. Temple priests and the Travancore royal family believe the vault is protected by the nagas — divine serpents who serve Lord Vishnu, the reclining deity of the temple. The door bears cobra imagery, and tradition holds that only a specific ancient chant — a naga bandham — sealed it centuries ago. Only another naga bandham performed by siddha priests of an unbroken lineage can safely open it.
-
-Attempts to override this through court orders were met with fierce opposition. Petitioners argued that the vault's contents belong to India. Defenders countered that some forms of knowledge — and some doors — exist outside human jurisdiction.
-
-What does Vault B contain? The legends speak of a tunnel to the sea, a cobra-guarded inner chamber, and treasures accumulated over two millennia by the kings of Travancore, who considered themselves servants of Lord Vishnu and deposited their wealth at his feet. Some say it holds artifacts from the Indus Valley civilization itself.
-
-As of this writing, Vault B remains sealed. The cobras on the door have not moved.`,
-        origin: 'The Padmanabhaswamy Temple dates in its current form to the 16th century, though the site is believed sacred for over 5,000 years. The Travancore royal family served as hereditary guardians of the temple.',
-        significance: 'The sealed vault represents the intersection of ancient spiritual tradition, national legal authority, and human curiosity about the past. It is a living mystery that forces modern India to confront the limits of secular governance over sacred space.',
-        tags: ['padmanabhaswamy', 'kerala', 'vault', 'cobra', 'treasure', 'vishnu', 'travancore', 'temple', 'naga'],
-        contributor: adminUser._id,
+La Llorona has become one of the most widespread legends in Mexican and broader Latin American culture, appearing in literature, film, and oral tradition across generations.`,
+        origin: 'La Llorona folklore dates back to colonial-era Mexico, with roots possibly tracing to pre-Columbian goddess myths.',
+        significance: 'The legend serves as both a cautionary tale for children and a reflection on grief, betrayal, and motherhood.',
+        tags: ['la llorona', 'mexico', 'ghost', 'weeping woman', 'folklore', 'river'],
+        contributor: contributor._id,
         status: 'approved',
         isFeatured: true,
         views: 9820,
