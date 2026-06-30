@@ -11,6 +11,5 @@ router.patch('/stories/:id/feature', ctrl.featureStory);
 router.post('/broadcast', ctrl.broadcastNotification);
 router.get('/reports', ctrl.getReports);
 router.patch('/reports/:id', ctrl.updateReport);
-router.get('/state-stats', ctrl.getStateStats);
-router.get('/category-stats', ctrl.getCategoryStats);
+router.get('/country-stats', ctrl.getCountryStats);
 module.exports = router;
