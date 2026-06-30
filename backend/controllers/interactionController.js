@@ -11,7 +11,7 @@ exports.getBookmarks = async (req, res) => {
     const query = { user: req.user._id };
     if (collection) query.collection = collection;
     const bookmarks = await Bookmark.find(query)
-      .populate({ path: 'story', populate: { path: 'category', select: 'name icon color' } })
+      .populate('story')
       .sort('-createdAt');
     res.json({ success: true, data: bookmarks });
   } catch (err) {
@@ -130,7 +130,7 @@ exports.getReadingHistory = async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
     const history = await ReadingHistory.find({ user: req.user._id })
-      .populate({ path: 'story', populate: { path: 'category', select: 'name icon' }, select: 'title slug coverImage state averageRating' })
+      .populate({ path: 'story', select: 'title slug coverImage country category averageRating' })
       .sort('-readAt')
       .skip(skip)
       .limit(Number(limit));
