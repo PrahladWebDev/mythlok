@@ -122,7 +122,7 @@ const Notifications = () => {
         </div>
       </div>
 
-      <div className="container notif__body">
+      <div className="container notif__content">
         {loading ? (
           <div className="notif__loading">
             <div className="spinner" />
