@@ -40,14 +40,14 @@ const userSchema = new mongoose.Schema({
     publicId: { type: String, default: '' },
   },
   bio: { type: String, maxlength: [300, 'Bio cannot exceed 300 characters'], default: '' },
-  state: { type: String, default: '' }, // preferred/home state
+  country: { type: String, default: '' }, // preferred/home country
 
   // Stats
   storiesRead:    { type: Number, default: 0 },
   likesReceived:  { type: Number, default: 0 },
   storiesWritten: { type: Number, default: 0 },
   totalLikesReceived: { type: Number, default: 0 },
-  statesExplored: [{ type: String }],
+  countriesExplored: [{ type: String }],
 
   achievements: [{
     achievementId: { type: mongoose.Schema.Types.ObjectId, ref: 'Achievement' },
