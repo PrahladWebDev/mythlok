@@ -54,6 +54,12 @@ const userSchema = new mongoose.Schema({
     unlockedAt: { type: Date, default: Date.now },
   }],
 
+  // Names of bookmark collections the user has created (including empty ones).
+  // Bookmarks themselves store their own `collection` string (see Bookmark model);
+  // this list is what lets an empty collection survive even before any bookmark
+  // is moved into it.
+  bookmarkCollections: [{ type: String, trim: true, maxlength: 60 }],
+
   isActive:  { type: Boolean, default: true },
   isBlocked: { type: Boolean, default: false },
 
