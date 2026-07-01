@@ -13,7 +13,15 @@ exports.getBookmarks = async (req, res) => {
     const bookmarks = await Bookmark.find(query)
       .populate('story')
       .sort('-createdAt');
-    res.json({ success: true, data: bookmarks });
+
+    // Merge collections derived from bookmarks with the user's saved
+    // (possibly empty) collections so newly created ones survive a refresh.
+    const allBookmarks = collection ? await Bookmark.find({ user: req.user._id }) : bookmarks;
+    const derived = [...new Set(allBookmarks.map(b => b.collection || 'All Bookmarks'))];
+    const saved = req.user.bookmarkCollections || [];
+    const collections = [...new Set(['All Bookmarks', ...derived, ...saved])];
+
+    res.json({ success: true, data: bookmarks, collections });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to fetch bookmarks.' });
   }
@@ -47,9 +55,49 @@ exports.moveBookmark = async (req, res) => {
       { new: true }
     );
     if (!bookmark) return res.status(404).json({ success: false, message: 'Bookmark not found.' });
+
+    // Make sure this collection is registered so it persists even if it
+    // later becomes empty again.
+    if (collection && collection !== 'All Bookmarks') {
+      await User.findByIdAndUpdate(req.user._id, { $addToSet: { bookmarkCollections: collection } });
+    }
+
     res.json({ success: true, message: `Moved to ${collection}.`, data: bookmark });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to move bookmark.' });
+  }
+};
+
+exports.createCollection = async (req, res) => {
+  try {
+    const name = (req.body.name || '').trim();
+    if (!name) return res.status(400).json({ success: false, message: 'Collection name is required.' });
+    if (name === 'All Bookmarks') {
+      return res.status(400).json({ success: false, message: '"All Bookmarks" is a reserved name.' });
+    }
+    await User.findByIdAndUpdate(req.user._id, { $addToSet: { bookmarkCollections: name } });
+    res.json({ success: true, message: 'Collection created.', data: name });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to create collection.' });
+  }
+};
+
+exports.deleteCollection = async (req, res) => {
+  try {
+    const name = decodeURIComponent(req.params.name || '').trim();
+    if (!name || name === 'All Bookmarks') {
+      return res.status(400).json({ success: false, message: 'Invalid collection name.' });
+    }
+    // Move any bookmarks in this collection back to "All Bookmarks" rather
+    // than deleting them.
+    await Bookmark.updateMany(
+      { user: req.user._id, collection: name },
+      { collection: 'All Bookmarks' }
+    );
+    await User.findByIdAndUpdate(req.user._id, { $pull: { bookmarkCollections: name } });
+    res.json({ success: true, message: 'Collection deleted.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to delete collection.' });
   }
 };
 
