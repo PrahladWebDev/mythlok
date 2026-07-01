@@ -38,12 +38,8 @@ const Profile = ({ initialTab = 'overview' }) => {
     if (tab === 'bookmarks') {
       setLoading(true);
       api.get('/bookmarks').then(r => {
-        const data = r.data.data;
-        setBookmarks(data);
-        // Extract unique collections
-        const cols = [...new Set(data.map(b => b.collection || 'All Bookmarks'))];
-        if (!cols.includes('All Bookmarks')) cols.unshift('All Bookmarks');
-        setCollections(cols);
+        setBookmarks(r.data.data);
+        setCollections(r.data.collections || ['All Bookmarks']);
       }).catch(() => {}).finally(() => setLoading(false));
     }
     if (tab === 'history' && !history.length) {
@@ -67,10 +63,18 @@ const Profile = ({ initialTab = 'overview' }) => {
   const createCollection = async () => {
     const name = newCollectionName.trim();
     if (!name) return;
-    if (!collections.includes(name)) setCollections(prev => [...prev, name]);
-    setActiveCollection(name);
-    setNewCollectionName('');
-    setShowNewCollection(false);
+    try {
+      await api.post('/bookmarks/collections', { name });
+      if (!collections.includes(name)) setCollections(prev => [...prev, name]);
+      setActiveCollection(name);
+    } catch {
+      // even if the create call fails (e.g. dup), still let the user try using it
+      if (!collections.includes(name)) setCollections(prev => [...prev, name]);
+      setActiveCollection(name);
+    } finally {
+      setNewCollectionName('');
+      setShowNewCollection(false);
+    }
   };
 
   const moveBookmark = async (storyId, collection) => {
@@ -82,11 +86,22 @@ const Profile = ({ initialTab = 'overview' }) => {
     } catch { }
   };
 
+  // Removes a bookmark entirely (used from the "All Bookmarks" view)
   const removeBookmark = async (storyId) => {
     try {
       await api.post(`/bookmarks/${storyId}`);
       setBookmarks(prev => prev.filter(b => b.story?._id !== storyId));
     } catch {}
+  };
+
+  // Takes a story out of the current collection without deleting the bookmark
+  // (moves it back to "All Bookmarks")
+  const removeFromCollection = async (storyId) => {
+    if (activeCollection === 'All Bookmarks') {
+      await removeBookmark(storyId);
+    } else {
+      await moveBookmark(storyId, 'All Bookmarks');
+    }
   };
 
   const statusColor = { approved: '#7edb7e', pending: '#e8c97a', rejected: '#e87070', draft: '#7a7090', changes_requested: '#e8923a' };
@@ -279,8 +294,8 @@ const Profile = ({ initialTab = 'overview' }) => {
                         >📁 Move</button>
                         <button
                           className="profile__bookmark-remove"
-                          onClick={() => removeBookmark(b.story._id)}
-                          title="Remove bookmark"
+                          onClick={() => removeFromCollection(b.story._id)}
+                          title={activeCollection === 'All Bookmarks' ? 'Remove bookmark' : 'Remove from collection'}
                         >✕</button>
                       </div>
                     </div>
